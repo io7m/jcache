@@ -1,0 +1,10 @@
+bin
+build
+doc-out
+ext
+io7m-jcanephora-core/target
+io7m-jcanephora-jogl/target
+io7m-jcanephora-lwjgl/target
+javadoc
+target
+tmp
