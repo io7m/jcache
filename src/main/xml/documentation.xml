@@ -49,6 +49,7 @@
           <s:verbatim type="example"><![CDATA[$ mvn -C clean install]]></s:verbatim>
         </s:paragraph>
       </s:subsection>
+
       <s:subsection>
         <s:subsection-title>Maven</s:subsection-title>
         <s:paragraph>
@@ -59,7 +60,7 @@
         </s:paragraph>
         <s:paragraph>
           <s:verbatim type="example"><![CDATA[<dependency>
-  <groupId>com.io7m.jlucache.core</groupId>
+  <groupId>com.io7m.jlucache</groupId>
   <artifactId>io7m-jlucache</artifactId>
   <version>[1.0.0, 2.0.0)</version>
 </dependency>]]></s:verbatim>
