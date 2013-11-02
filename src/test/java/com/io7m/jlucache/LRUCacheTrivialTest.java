@@ -491,7 +491,7 @@ public final class LRUCacheTrivialTest
    * Basic toString tests.
    */
 
-  @Test public void testToString()
+  @SuppressWarnings("boxing") @Test public void testToString()
     throws Failure,
       ConstraintError,
       LUCacheException
