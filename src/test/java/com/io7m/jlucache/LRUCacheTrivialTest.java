@@ -31,20 +31,39 @@ public final class LRUCacheTrivialTest
 {
   static class EventLog<K, V> implements LUCacheEvents<K, V>
   {
-    K       evicted_key;
-    V       evicted_value;
-    long    evicted_size;
-    boolean evicted;
+    K         evicted_key;
+    V         evicted_value;
+    long      evicted_size;
+    boolean   evicted;
 
-    boolean loaded;
-    K       loaded_key;
-    V       loaded_value;
-    long    loaded_size;
+    boolean   loaded;
+    K         loaded_key;
+    V         loaded_value;
+    long      loaded_size;
 
-    boolean retrieved;
-    K       retrieved_key;
-    V       retrieved_value;
-    long    retrieved_size;
+    boolean   retrieved;
+    K         retrieved_key;
+    V         retrieved_value;
+    long      retrieved_size;
+
+    boolean   close_error;
+    K         close_error_key;
+    V         close_error_value;
+    long      close_error_size;
+    Throwable close_error_exception;
+
+    @Override public void luCacheEventObjectCloseError(
+      final K key,
+      final V value,
+      final long size,
+      final Throwable x)
+    {
+      this.close_error = true;
+      this.close_error_key = key;
+      this.close_error_value = value;
+      this.close_error_size = size;
+      this.close_error_exception = x;
+    }
 
     @Override public void luCacheEventObjectEvicted(
       final K key1,
@@ -84,11 +103,21 @@ public final class LRUCacheTrivialTest
       this.evicted = false;
       this.loaded = false;
       this.retrieved = false;
+      this.close_error = false;
     }
   }
 
   static class EventThrown<K, V> implements LUCacheEvents<K, V>
   {
+    @Override public void luCacheEventObjectCloseError(
+      final K key,
+      final V value,
+      final long size,
+      final Throwable x)
+    {
+      throw new AssertionError("Close error");
+    }
+
     @Override public void luCacheEventObjectEvicted(
       final K key,
       final V value,
@@ -223,6 +252,48 @@ public final class LRUCacheTrivialTest
   }
 
   /**
+   * Exceptions raised during closing are delivered.
+   * 
+   * @throws LUCacheException
+   */
+
+  @SuppressWarnings("boxing") @Test public void testEventsCloseError()
+    throws Failure,
+      ConstraintError,
+      LUCacheException
+  {
+    final Pair<LUCacheLoaderFaultInjectable<String, Long>, LRUCacheTrivial<String, Long, Failure>> pair =
+      this.newCache(1L);
+
+    final EventLog<String, Long> ev = new EventLog<String, Long>();
+    pair.second.luCacheEventsSubscribe(ev);
+
+    ev.reset();
+    pair.first.setFailure(false);
+    pair.first.setLoadedValue(0L);
+    pair.first.setLoadedValueSize(1);
+    pair.second.luCacheGet("key0");
+    Assert.assertTrue(ev.loaded);
+    Assert.assertEquals("key0", ev.loaded_key);
+    Assert.assertEquals(Long.valueOf(0L), ev.loaded_value);
+    Assert.assertEquals(1, ev.loaded_size);
+
+    ev.reset();
+    pair.first.setFailure(false);
+    pair.first.setLoadedValue(1L);
+    pair.first.setLoadedValueSize(1);
+    pair.first.setCloseFailure(true);
+    pair.second.luCacheGet("key1");
+    Assert.assertTrue(ev.close_error);
+    Assert.assertEquals("key0", ev.close_error_key);
+    Assert.assertEquals(Long.valueOf(0L), ev.close_error_value);
+    Assert.assertTrue(ev.loaded);
+    Assert.assertEquals("key1", ev.loaded_key);
+    Assert.assertEquals(Long.valueOf(1L), ev.loaded_value);
+    Assert.assertEquals(1, ev.loaded_size);
+  }
+
+  /**
    * Exceptions are not propagated.
    * 
    * @throws LUCacheException
@@ -250,6 +321,15 @@ public final class LRUCacheTrivialTest
 
     for (long i = 2; i < 10; ++i) {
       pair.first.setFailure(false);
+      pair.first.setLoadedValue(i);
+      pair.first.setLoadedValueSize(1);
+
+      pair.second.luCacheGet("key" + i);
+    }
+
+    for (long i = 2; i < 10; ++i) {
+      pair.first.setFailure(false);
+      pair.first.setCloseFailure(true);
       pair.first.setLoadedValue(i);
       pair.first.setLoadedValueSize(1);
 
@@ -317,6 +397,52 @@ public final class LRUCacheTrivialTest
       Assert.assertEquals(2, pair.second.luCacheItems());
       Assert.assertEquals(2, pair.second.luCacheSize());
     }
+  }
+
+  /**
+   * A cache of size 1 can hold one object of size 1.
+   * 
+   * @throws LUCacheException
+   */
+
+  @SuppressWarnings("boxing") @Test public void testEvictSize()
+    throws Failure,
+      ConstraintError,
+      LUCacheException
+  {
+    final Pair<LUCacheLoaderFaultInjectable<String, Long>, LRUCacheTrivial<String, Long, Failure>> pair =
+      this.newCache(1L);
+
+    final EventLog<String, Long> ev = new EventLog<String, Long>();
+    pair.second.luCacheEventsSubscribe(ev);
+
+    ev.reset();
+    pair.first.setFailure(false);
+    pair.first.setLoadedValue(0L);
+    pair.first.setLoadedValueSize(1);
+    pair.second.luCacheGet("key0");
+    Assert.assertTrue(ev.loaded);
+    Assert.assertEquals("key0", ev.loaded_key);
+    Assert.assertEquals(Long.valueOf(0L), ev.loaded_value);
+    Assert.assertEquals(Long.valueOf(1L), Long.valueOf(ev.loaded_size));
+    Assert.assertTrue(ev.retrieved);
+    Assert.assertEquals("key0", ev.retrieved_key);
+    Assert.assertEquals(Long.valueOf(0L), ev.retrieved_value);
+    Assert.assertEquals(Long.valueOf(1L), Long.valueOf(ev.retrieved_size));
+
+    ev.reset();
+    pair.first.setFailure(false);
+    pair.first.setLoadedValue(1L);
+    pair.first.setLoadedValueSize(1);
+    pair.second.luCacheGet("key1");
+    Assert.assertTrue(ev.loaded);
+    Assert.assertEquals("key1", ev.loaded_key);
+    Assert.assertEquals(Long.valueOf(1L), ev.loaded_value);
+    Assert.assertEquals(Long.valueOf(1L), Long.valueOf(ev.loaded_size));
+    Assert.assertTrue(ev.retrieved);
+    Assert.assertEquals("key1", ev.retrieved_key);
+    Assert.assertEquals(Long.valueOf(1L), ev.retrieved_value);
+    Assert.assertEquals(Long.valueOf(1L), Long.valueOf(ev.retrieved_size));
   }
 
   /**

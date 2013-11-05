@@ -97,7 +97,6 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
   }
 
   private void cacheEvictOldest()
-    throws E
   {
     final Entry<Long, K> eleast = this.time_items.firstEntry();
     assert eleast != null;
@@ -108,9 +107,8 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
   private void cacheEvictOldestItems(
     final long added_size,
     final long maximum)
-    throws E
   {
-    assert added_size < maximum;
+    assert added_size <= maximum;
 
     /**
      * Because objects larger than the capacity cannot be inserted into the
@@ -191,10 +189,13 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
     final @Nonnull Long time,
     final @Nonnull K key,
     final @Nonnull CachedValue<V> existing)
-    throws E
   {
     this.eventObjectEvicted(key, existing);
-    this.loader.luCacheClose(existing.value);
+    try {
+      this.loader.luCacheClose(existing.value);
+    } catch (final Throwable x) {
+      this.eventObjectCloseError(key, existing, x);
+    }
     this.time_items.remove(time);
     this.items.remove(key);
     this.used -= existing.size;
@@ -241,6 +242,24 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
     m.append(size);
     m.append(", which is too small: must be at least 1");
     return new LUCacheException(Code.LUCACHE_OBJECT_TOO_SMALL, m.toString());
+  }
+
+  private void eventObjectCloseError(
+    final @Nonnull K key,
+    final @Nonnull CachedValue<V> existing,
+    final @Nonnull Throwable x)
+  {
+    if (this.events != null) {
+      try {
+        this.events.luCacheEventObjectCloseError(
+          key,
+          existing.value,
+          existing.size,
+          x);
+      } catch (final Throwable _) {
+        // Ignore
+      }
+    }
   }
 
   private void eventObjectEvicted(

@@ -26,6 +26,19 @@ public interface LUCacheEvents<K, V>
 {
   /**
    * <p>
+   * Called when an object <code>value</code>, associated with
+   * <code>key</code>, failed to close due to exception <code>x</code>.
+   * </p>
+   */
+
+  public void luCacheEventObjectCloseError(
+    final @Nonnull K key,
+    final @Nonnull V value,
+    final long size,
+    final @Nonnull Throwable x);
+
+  /**
+   * <p>
    * Called when an object <code>value</code> is associated with
    * <code>key</code> is about to be evicted.
    * </p>

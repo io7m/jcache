@@ -38,12 +38,15 @@ public final class LUCacheLoaderFaultInjectable<K, V> implements
   private @CheckForNull V value;
   private long            size = 0L;
   private boolean         fail;
+  private boolean         close_fail;
 
   @Override public void luCacheClose(
     final V v)
     throws Failure
   {
-    // Nothing.
+    if (this.close_fail) {
+      throw new Failure();
+    }
   }
 
   @Override public V luCacheLoadFrom(
@@ -60,6 +63,12 @@ public final class LUCacheLoaderFaultInjectable<K, V> implements
     final @Nonnull V v)
   {
     return this.size;
+  }
+
+  public void setCloseFailure(
+    final boolean fail)
+  {
+    this.close_fail = fail;
   }
 
   public void setFailure(
