@@ -34,14 +34,14 @@ import com.io7m.jlucache.LUCacheException.Code;
  */
 
 public final class LRUCacheTrivial<K, V, E extends Throwable> implements
-  LUCache<K, V, E>,
+  LRUCache<K, V, E>,
   LUCacheEventsSubscription<K, V, E>
 {
   @Immutable private static final class CachedValue<V>
   {
-    final @Nonnull V value;
-    final long       time;
     final long       size;
+    final long       time;
+    final @Nonnull V value;
 
     CachedValue(
       final @Nonnull V value,
@@ -65,13 +65,13 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
     return new LRUCacheTrivial<K, V, E>(loader, config);
   }
 
-  private final @Nonnull LUCacheLoader<K, V, E>     loader;
   private final @Nonnull LRUCacheConfig             config;
+  private @CheckForNull LUCacheEvents<K, V>         events;
+  private long                                      gets;
   private final @Nonnull HashMap<K, CachedValue<V>> items;
+  private final @Nonnull LUCacheLoader<K, V, E>     loader;
   private final @Nonnull TreeMap<Long, K>           time_items;
   private long                                      used;
-  private long                                      gets;
-  private @CheckForNull LUCacheEvents<K, V>         events;
 
   private LRUCacheTrivial(
     final @Nonnull LUCacheLoader<K, V, E> loader,
@@ -305,7 +305,7 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
     }
   }
 
-  @Override public @Nonnull LRUCacheConfig luCacheConfiguration()
+  @Override public @Nonnull LRUCacheConfig lruCacheConfiguration()
   {
     return this.config;
   }

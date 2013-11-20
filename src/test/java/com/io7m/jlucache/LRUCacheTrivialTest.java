@@ -577,7 +577,7 @@ public final class LRUCacheTrivialTest
         config);
     Assert.assertEquals(0, cache.luCacheItems());
     Assert.assertEquals(0, cache.luCacheSize());
-    Assert.assertEquals(config, cache.luCacheConfiguration());
+    Assert.assertEquals(config, cache.lruCacheConfiguration());
 
     for (long e = 2; e <= 32; e *= 2) {
       Assert.assertFalse(cache.luCacheIsCached(Long.valueOf((long) Math.pow(

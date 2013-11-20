@@ -29,12 +29,6 @@ import com.io7m.jaux.Constraints.ConstraintError;
 public interface LUCache<K, V, E extends Throwable>
 {
   /**
-   * Retrieve the configuration for the cache.
-   */
-
-  public @Nonnull LRUCacheConfig luCacheConfiguration();
-
-  /**
    * Retrieve an object named <code>key</code>, loading it if necessary.
    * 
    * @throws ConstraintError
