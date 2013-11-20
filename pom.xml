@@ -6,7 +6,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.io7m.jlucache</groupId>
   <artifactId>io7m-jlucache</artifactId>
-  <version>0.1.1</version>
+  <version>0.2.0</version>
   <packaging>jar</packaging>
   <name>io7m-jlucache</name>
   <description>Generic least-used cache algorithms</description>
