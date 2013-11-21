@@ -101,7 +101,7 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
     final Entry<Long, K> eleast = this.time_items.firstEntry();
     assert eleast != null;
     final CachedValue<V> old_cached = this.items.get(eleast.getValue());
-    this.cacheRemove(eleast.getKey(), eleast.getValue(), old_cached);
+    this.cacheRemove(eleast.getValue(), old_cached);
   }
 
   private void cacheEvictOldestItems(
@@ -186,7 +186,6 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
   }
 
   private void cacheRemove(
-    final @Nonnull Long time,
     final @Nonnull K key,
     final @Nonnull CachedValue<V> existing)
   {
@@ -196,7 +195,7 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
     } catch (final Throwable x) {
       this.eventObjectCloseError(key, existing, x);
     }
-    this.time_items.remove(time);
+    this.time_items.remove(Long.valueOf(existing.time));
     this.items.remove(key);
     this.used -= existing.size;
   }
@@ -377,5 +376,15 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
 
     builder.append("]");
     return builder.toString();
+  }
+
+  @Override public void luCacheDelete()
+  {
+    while (this.items.size() > 0) {
+      this.cacheEvictOldest();
+    }
+
+    assert this.time_items.size() == 0;
+    assert this.items.size() == 0;
   }
 }

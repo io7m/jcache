@@ -29,6 +29,12 @@ import com.io7m.jaux.Constraints.ConstraintError;
 public interface LUCache<K, V, E extends Throwable>
 {
   /**
+   * Delete all cached items.
+   */
+
+  public void luCacheDelete();
+
+  /**
    * Retrieve an object named <code>key</code>, loading it if necessary.
    * 
    * @throws ConstraintError

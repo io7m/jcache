@@ -29,28 +29,89 @@ import com.io7m.jlucache.LUCacheLoaderFaultInjectable.Failure;
 
 public final class LRUCacheTrivialTest
 {
+  static class EventCount<K, V> implements LUCacheEvents<K, V>
+  {
+    private int close_errors;
+    private int evictions;
+    private int loads;
+    private int retrievals;
+
+    public int getCloseErrors()
+    {
+      return this.close_errors;
+    }
+
+    public int getEvictions()
+    {
+      return this.evictions;
+    }
+
+    public int getLoads()
+    {
+      return this.loads;
+    }
+
+    public int getRetrievals()
+    {
+      return this.retrievals;
+    }
+
+    @Override public void luCacheEventObjectCloseError(
+      final K key,
+      final V value,
+      final long size,
+      final Throwable x)
+    {
+      ++this.close_errors;
+    }
+
+    @Override public void luCacheEventObjectEvicted(
+      final K key,
+      final V value,
+      final long size)
+    {
+      ++this.evictions;
+    }
+
+    @Override public void luCacheEventObjectLoaded(
+      final K key,
+      final V value,
+      final long size)
+    {
+      ++this.loads;
+    }
+
+    @Override public void luCacheEventObjectRetrieved(
+      final K key,
+      final V value,
+      final long size)
+    {
+      ++this.retrievals;
+    }
+  }
+
   static class EventLog<K, V> implements LUCacheEvents<K, V>
   {
-    K         evicted_key;
-    V         evicted_value;
-    long      evicted_size;
-    boolean   evicted;
+    boolean   close_error;
+    Throwable close_error_exception;
+    K         close_error_key;
+    long      close_error_size;
 
+    V         close_error_value;
+    boolean   evicted;
+    K         evicted_key;
+    long      evicted_size;
+
+    V         evicted_value;
     boolean   loaded;
     K         loaded_key;
-    V         loaded_value;
     long      loaded_size;
 
+    V         loaded_value;
     boolean   retrieved;
     K         retrieved_key;
-    V         retrieved_value;
     long      retrieved_size;
-
-    boolean   close_error;
-    K         close_error_key;
-    V         close_error_value;
-    long      close_error_size;
-    Throwable close_error_exception;
+    V         retrieved_value;
 
     @Override public void luCacheEventObjectCloseError(
       final K key,
@@ -162,6 +223,44 @@ public final class LRUCacheTrivialTest
     } catch (final ConstraintError x) {
       throw new UnreachableCodeException(x);
     }
+  }
+
+  /**
+   * Clearing a cache deletes all of the items.
+   * 
+   * @throws LUCacheException
+   */
+
+  @SuppressWarnings("boxing") @Test public void testDelete()
+    throws Failure,
+      ConstraintError,
+      LUCacheException
+  {
+    final Pair<LUCacheLoaderFaultInjectable<String, Long>, LRUCacheTrivial<String, Long, Failure>> pair =
+      this.newCache(8L);
+
+    final EventCount<String, Long> ec = new EventCount<String, Long>();
+    pair.second.luCacheEventsSubscribe(ec);
+
+    for (long i = 0; i < 8; ++i) {
+      pair.first.setFailure(false);
+      pair.first.setLoadedValue(i);
+      pair.first.setLoadedValueSize(1);
+
+      pair.second.luCacheGet("k" + i);
+      Assert.assertTrue(pair.second.luCacheIsCached("k" + i));
+      Assert.assertEquals(i + 1, pair.second.luCacheItems());
+      Assert.assertEquals(i + 1, pair.second.luCacheSize());
+    }
+
+    pair.second.luCacheDelete();
+    Assert.assertEquals(0, pair.second.luCacheItems());
+    Assert.assertEquals(0, pair.second.luCacheSize());
+
+    Assert.assertEquals(8, ec.getEvictions());
+    Assert.assertEquals(8, ec.getLoads());
+    Assert.assertEquals(0, ec.getCloseErrors());
+    Assert.assertEquals(8, ec.getRetrievals());
   }
 
   /**
