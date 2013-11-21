@@ -16,33 +16,38 @@
 
 package com.io7m.jlucache;
 
-import javax.annotation.Nonnull;
-
-import com.io7m.jaux.Constraints.ConstraintError;
-
-/**
- * Interface for subscribing to cache events.
- */
-
-public interface LUCacheEventsSubscription<K, V>
+class EventThrown<K, V> implements LUCacheEvents<K, V>
 {
-  /**
-   * Subscribe to events for the current cache, replacing any existing
-   * subscriptions (if any). The cache will call functions in the given
-   * interface when events occur.
-   * 
-   * @throws ConstraintError
-   *           Iff <code>events == null</code>.
-   */
+  @Override public void luCacheEventObjectCloseError(
+    final K key,
+    final V value,
+    final long size,
+    final Throwable x)
+  {
+    throw new AssertionError("Close error");
+  }
 
-  public void luCacheEventsSubscribe(
-    final @Nonnull LUCacheEvents<K, V> events)
-    throws ConstraintError;
+  @Override public void luCacheEventObjectEvicted(
+    final K key,
+    final V value,
+    final long size)
+  {
+    throw new AssertionError("Evicted");
+  }
 
-  /**
-   * Stop receiving events for the current cache.
-   */
+  @Override public void luCacheEventObjectLoaded(
+    final K key,
+    final V value,
+    final long size)
+  {
+    throw new AssertionError("Loaded");
+  }
 
-  public void luCacheEventsUnsubscribe();
-
+  @Override public void luCacheEventObjectRetrieved(
+    final K key,
+    final V value,
+    final long size)
+  {
+    throw new AssertionError("Retrieved");
+  }
 }

@@ -35,10 +35,10 @@ public final class LUCacheLoaderFaultInjectable<K, V> implements
     }
   }
 
-  private @CheckForNull V value;
-  private long            size = 0L;
-  private boolean         fail;
   private boolean         close_fail;
+  private boolean         fail;
+  private long            size = 0L;
+  private @CheckForNull V value;
 
   @Override public void luCacheClose(
     final V v)

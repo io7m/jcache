@@ -34,6 +34,12 @@ public final class LUCacheException extends Throwable
   public static enum Code
   {
     /**
+     * The loader for the cache returned <code>null</code> for a given key.
+     */
+
+    LUCACHE_LOADER_RETURNED_NULL,
+
+    /**
      * An object cannot be stored in the cache, because its size is greater
      * than the cache's maximum capacity.
      */
@@ -45,19 +51,56 @@ public final class LUCacheException extends Throwable
      * one unit.
      */
 
-    LUCACHE_OBJECT_TOO_SMALL,
-
-    /**
-     * The loader for the cache returned <code>null</code> for a given key.
-     */
-
-    LUCACHE_LOADER_RETURNED_NULL
+    LUCACHE_OBJECT_TOO_SMALL
   }
 
-  private static final long   serialVersionUID;
+  private static final long serialVersionUID;
 
   static {
     serialVersionUID = -4142305723422812182L;
+  }
+
+  static @Nonnull <K> LUCacheException errorLoaderReturnedNull(
+    final @Nonnull K key)
+    throws ConstraintError
+  {
+    final StringBuilder m = new StringBuilder();
+    m.append("Loader returned null for '");
+    m.append(key);
+    m.append("'");
+    return new LUCacheException(
+      Code.LUCACHE_LOADER_RETURNED_NULL,
+      m.toString());
+  }
+
+  static @Nonnull <K> LUCacheException errorObjectTooLarge(
+    final @Nonnull K key,
+    final long size,
+    final long maximum)
+    throws ConstraintError
+  {
+    final StringBuilder m = new StringBuilder();
+    m.append("Object for '");
+    m.append(key);
+    m.append("' is of size ");
+    m.append(size);
+    m.append(", which is too large for a cache with maximum capacity of ");
+    m.append(maximum);
+    return new LUCacheException(Code.LUCACHE_OBJECT_TOO_LARGE, m.toString());
+  }
+
+  static @Nonnull <K> LUCacheException errorObjectTooSmall(
+    final @Nonnull K key,
+    final long size)
+    throws ConstraintError
+  {
+    final StringBuilder m = new StringBuilder();
+    m.append("Object for '");
+    m.append(key);
+    m.append("' is of size ");
+    m.append(size);
+    m.append(", which is too small: must be at least 1");
+    return new LUCacheException(Code.LUCACHE_OBJECT_TOO_SMALL, m.toString());
   }
 
   private final @Nonnull Code code;

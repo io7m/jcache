@@ -16,6 +16,10 @@
 
 package com.io7m.jlucache;
 
+/**
+ * The type of mutable least-recently-used caches.
+ */
+
 public interface LRUCache<K, V, E extends Throwable> extends LUCache<K, V, E>
 {
   /**

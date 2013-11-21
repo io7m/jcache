@@ -16,33 +16,15 @@
 
 package com.io7m.jlucache;
 
-import javax.annotation.Nonnull;
-
-import com.io7m.jaux.Constraints.ConstraintError;
-
 /**
- * Interface for subscribing to cache events.
+ * The type of mutable caches that can be deleted.
  */
 
-public interface LUCacheEventsSubscription<K, V>
+public interface LUCacheDeletable
 {
   /**
-   * Subscribe to events for the current cache, replacing any existing
-   * subscriptions (if any). The cache will call functions in the given
-   * interface when events occur.
-   * 
-   * @throws ConstraintError
-   *           Iff <code>events == null</code>.
+   * Delete all cached items.
    */
 
-  public void luCacheEventsSubscribe(
-    final @Nonnull LUCacheEvents<K, V> events)
-    throws ConstraintError;
-
-  /**
-   * Stop receiving events for the current cache.
-   */
-
-  public void luCacheEventsUnsubscribe();
-
+  public void luCacheDelete();
 }

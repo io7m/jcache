@@ -16,39 +16,37 @@
 
 package com.io7m.jlucache;
 
-import javax.annotation.Nonnull;
-
 import com.io7m.jaux.Constraints.ConstraintError;
 
 /**
- * The type of mutable least-used caches, containing objects of type
- * <code>V</code> with each object associated with values of <code>K</code>,
- * throwing <code>E</code> on load/cache failures.
+ * The type of readable least-used caches, containing objects associated with
+ * keys of type <code>K</code>.
  */
 
-public interface LUCache<K, V, E extends Throwable> extends
-  LUCacheReadable<K>,
-  LUCacheDeletable,
-  LUCacheEventsSubscription<K, V>
+public interface LUCacheReadable<K>
 {
   /**
-   * Retrieve an object named <code>key</code>, loading it if necessary.
+   * Return <code>true</code> if an object is cached for <code>key</code>.
    * 
    * @throws ConstraintError
    *           Iff <code>key == null</code>, or an internal constraint error
    *           occurs.
-   * @throws E
-   *           Iff the object named <code>key</code> raises an exception of
-   *           type <code>E</code> upon loading.
-   * @throws LUCacheException
-   *           Iff the object cannot be cached (possibly due to being too
-   *           large, or violating other constraints of the particular cache
-   *           implementation).
    */
 
-  public @Nonnull V luCacheGet(
-    final @Nonnull K key)
-    throws ConstraintError,
-      E,
-      LUCacheException;
+  public boolean luCacheIsCached(
+    K key)
+    throws ConstraintError;
+
+  /**
+   * Return the number of items cached.
+   */
+
+  public long luCacheItems();
+
+  /**
+   * Return the size of the current cache, in units.
+   */
+
+  public long luCacheSize();
+
 }
