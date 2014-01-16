@@ -1,5 +1,5 @@
 /*
- * Copyright © 2013 <code@io7m.com> http://io7m.com
+ * Copyright © 2014 <code@io7m.com> http://io7m.com
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,10 +16,16 @@
 
 package com.io7m.jcache;
 
-import com.io7m.jcache.LUCacheEvents;
-
 class EventCount<K, V> implements LUCacheEvents<K, V>
 {
+  public EventCount()
+  {
+    this.close_errors = 0;
+    this.evictions = 0;
+    this.loads = 0;
+    this.retrievals = 0;
+  }
+
   private int close_errors;
   private int evictions;
   private int loads;

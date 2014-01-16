@@ -1,5 +1,5 @@
 /*
- * Copyright © 2013 <code@io7m.com> http://io7m.com
+ * Copyright © 2014 <code@io7m.com> http://io7m.com
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,30 +16,33 @@
 
 package com.io7m.jcache;
 
-import com.io7m.jcache.LUCacheEvents;
-
 class EventLog<K, V> implements LUCacheEvents<K, V>
 {
-  boolean   close_error;
-  Throwable close_error_exception;
-  K         close_error_key;
-  long      close_error_size;
+  public EventLog()
+  {
+    // Nothing
+  }
 
-  V         close_error_value;
-  boolean   evicted;
-  K         evicted_key;
-  long      evicted_size;
+  public boolean   close_error           = false;
+  public Throwable close_error_exception = null;
+  public K         close_error_key       = null;
+  public long      close_error_size      = 0L;
 
-  V         evicted_value;
-  boolean   loaded;
-  K         loaded_key;
-  long      loaded_size;
+  public V         close_error_value     = null;
+  public boolean   evicted               = false;
+  public K         evicted_key           = null;
+  public long      evicted_size          = 0L;
 
-  V         loaded_value;
-  boolean   retrieved;
-  K         retrieved_key;
-  long      retrieved_size;
-  V         retrieved_value;
+  public V         evicted_value         = null;
+  public boolean   loaded                = false;
+  public K         loaded_key            = null;
+  public long      loaded_size           = 0L;
+
+  public V         loaded_value          = null;
+  public boolean   retrieved             = false;
+  public K         retrieved_key         = null;
+  public long      retrieved_size        = 0L;
+  public V         retrieved_value       = null;
 
   @Override public void luCacheEventObjectCloseError(
     final K key,
