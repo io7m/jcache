@@ -1,5 +1,5 @@
 /*
- * Copyright © 2013 <code@io7m.com> http://io7m.com
+ * Copyright © 2014 <code@io7m.com> http://io7m.com
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -22,6 +22,10 @@ import javax.annotation.concurrent.Immutable;
 import com.io7m.jaux.Constraints;
 import com.io7m.jaux.Constraints.ConstraintError;
 
+/**
+ * Periodic cache configuration.
+ */
+
 @Immutable public final class PCacheConfig
 {
   /**
@@ -31,7 +35,7 @@ import com.io7m.jaux.Constraints.ConstraintError;
   public interface Builder
   {
     /**
-     * Create a new configuration.
+     * @return A new configuration with all of the settings configured so far
      * 
      * @throws ConstraintError
      *           Iff both the maximum age and maximum size are unlimited.
@@ -41,13 +45,13 @@ import com.io7m.jaux.Constraints.ConstraintError;
       throws ConstraintError;
 
     /**
-     * Retrieve the current maximum age.
+     * @return The current maximum age.
      */
 
     public long getMaximumAge();
 
     /**
-     * Retrieve the current maximum size, in units.
+     * @return The current maximum size, in units.
      */
 
     public long getMaximumSize();
@@ -55,6 +59,8 @@ import com.io7m.jaux.Constraints.ConstraintError;
     /**
      * Set the current maximum age.
      * 
+     * @param age
+     *          The new maximum age
      * @throws ConstraintError
      *           Iff <code>age &lt; 1</code>.
      */
@@ -64,8 +70,10 @@ import com.io7m.jaux.Constraints.ConstraintError;
       throws ConstraintError;
 
     /**
-     * Set the current maximum size, in units.
+     * Set the current maximum size.
      * 
+     * @param size
+     *          The maximum size in units
      * @throws ConstraintError
      *           Iff <code>size &lt; 1</code>.
      */
@@ -88,7 +96,7 @@ import com.io7m.jaux.Constraints.ConstraintError;
   }
 
   /**
-   * Create a new build from which to create configurations.
+   * @return A new builder from which to create configurations.
    */
 
   public static @Nonnull Builder newBuilder()
@@ -184,13 +192,13 @@ import com.io7m.jaux.Constraints.ConstraintError;
 
   /**
    * <p>
-   * Retrieve the maximum age <code>A</code> of items in the cache, or
-   * <code>0</code> if there is no maximum age.
-   * </p>
-   * <p>
+   * Retrieve the current maximum age <code>A</code> of items in the cache.
    * Items that have not been referenced for at least <code>A</code> periods
    * will be removed from the cache at the end of the current period.
    * </p>
+   * 
+   * @return The maximum age of items in the cache, or <code>0</code> if there
+   *         is no maximum age.
    */
 
   public long getMaximumAge()
@@ -199,8 +207,8 @@ import com.io7m.jaux.Constraints.ConstraintError;
   }
 
   /**
-   * Retrieve the maximum size of the cache, in units, or <code>0</code> if
-   * there is no maximum size.
+   * @return The maximum size of the cache, in units, or <code>0</code> if
+   *         there is no maximum size.
    */
 
   public long getMaximumSize()

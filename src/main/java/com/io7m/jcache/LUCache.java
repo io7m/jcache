@@ -1,5 +1,5 @@
 /*
- * Copyright © 2013 <code@io7m.com> http://io7m.com
+ * Copyright © 2014 <code@io7m.com> http://io7m.com
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -24,6 +24,13 @@ import com.io7m.jaux.Constraints.ConstraintError;
  * The type of mutable least-used caches, containing objects of type
  * <code>V</code> with each object associated with values of <code>K</code>,
  * throwing <code>E</code> on load/cache failures.
+ * 
+ * @param <K>
+ *          The type of keys
+ * @param <V>
+ *          The type of cached values
+ * @param <E>
+ *          The type of exceptions raised during loading
  */
 
 public interface LUCache<K, V, E extends Throwable> extends
@@ -34,6 +41,9 @@ public interface LUCache<K, V, E extends Throwable> extends
   /**
    * Retrieve an object named <code>key</code>, loading it if necessary.
    * 
+   * @return The cached or loaded object associated with <code>key</code>.
+   * @param key
+   *          The key identifying the object to be retrieved.
    * @throws ConstraintError
    *           Iff <code>key == null</code>, or an internal constraint error
    *           occurs.

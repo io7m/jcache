@@ -1,5 +1,5 @@
 /*
- * Copyright © 2013 <code@io7m.com> http://io7m.com
+ * Copyright © 2014 <code@io7m.com> http://io7m.com
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -29,7 +29,10 @@ import com.io7m.jaux.Constraints.ConstraintError;
 @Immutable public final class LRUCacheConfig
 {
   /**
-   * Create a new empty configuration.
+   * @return a new empty configuration.
+   * 
+   * @throws ConstraintError
+   *           Iff an internal constraint error occurs.
    */
 
   public static @Nonnull LRUCacheConfig empty()
@@ -41,16 +44,25 @@ import com.io7m.jaux.Constraints.ConstraintError;
   private final long max_capacity;
 
   private LRUCacheConfig(
-    final long max_capacity)
+    final long in_max_capacity)
     throws ConstraintError
   {
     this.max_capacity =
       Constraints.constrainRange(
-        max_capacity,
+        in_max_capacity,
         0,
         Long.MAX_VALUE,
         "Maximum capacity is at least 0");
   }
+
+  /**
+   * Construct a new cache configuration based on <tt>other</tt>.
+   * 
+   * @param other
+   *          An existing configuration
+   * @throws ConstraintError
+   *           Iff <code>other == null</code>.
+   */
 
   public LRUCacheConfig(
     final @Nonnull LRUCacheConfig other)
@@ -81,7 +93,7 @@ import com.io7m.jaux.Constraints.ConstraintError;
   }
 
   /**
-   * Retrieve the maximum capacity of the cache that will be created.
+   * @return The maximum capacity of the cache that will be created.
    */
 
   public long getMaximumCapacity()
@@ -111,6 +123,12 @@ import com.io7m.jaux.Constraints.ConstraintError;
   /**
    * Derive a configuration based on the existing configuration with a maximum
    * capacity of <code>max</code>.
+   * 
+   * @param max
+   *          The maximum cache capacity
+   * @return A new cache configuration
+   * @throws ConstraintError
+   *           Iff any internal constraint error occurs
    */
 
   @SuppressWarnings("static-method") public @Nonnull

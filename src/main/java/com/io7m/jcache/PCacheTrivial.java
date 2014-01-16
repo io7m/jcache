@@ -1,5 +1,5 @@
 /*
- * Copyright © 2013 <code@io7m.com> http://io7m.com
+ * Copyright © 2014 <code@io7m.com> http://io7m.com
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,8 +18,10 @@ package com.io7m.jcache;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.annotation.CheckForNull;
@@ -29,25 +31,70 @@ import javax.annotation.concurrent.Immutable;
 import com.io7m.jaux.Constraints;
 import com.io7m.jaux.Constraints.ConstraintError;
 
+/**
+ * A trivial implementation of the {@link PCache} interface.
+ * 
+ * @param <K>
+ *          The type of keys
+ * @param <V>
+ *          The type of cached values
+ * @param <E>
+ *          The type of exceptions raised during loading
+ */
+
 public final class PCacheTrivial<K, V, E extends Throwable> implements
   PCache<K, V, E>
 {
   @Immutable private static final class CachedValue<V>
   {
-    final long          size;
-    final @Nonnull Long time;
-    final @Nonnull V    value;
+    private final long          size;
+    private final @Nonnull Long time;
+    private final @Nonnull V    value;
 
     public CachedValue(
-      final @Nonnull V value,
-      final @Nonnull Long time,
-      final long size)
+      final @Nonnull V in_value,
+      final @Nonnull Long in_time,
+      final long in_size)
     {
-      this.value = value;
-      this.time = time;
-      this.size = size;
+      this.value = in_value;
+      this.time = in_time;
+      this.size = in_size;
+    }
+
+    public long getSize()
+    {
+      return this.size;
+    }
+
+    public @Nonnull Long getTime()
+    {
+      return this.time;
+    }
+
+    public @Nonnull V getValue()
+    {
+      return this.value;
     }
   }
+
+  /**
+   * Construct a new <tt>PCache</tt>.
+   * 
+   * @param loader
+   *          The class that will load instances when given keys
+   * @param config
+   *          The cache configuration
+   * @return A new cache instance
+   * @throws ConstraintError
+   *           Iff the loader or configuration are <tt>null</tt>
+   * 
+   * @param <K>
+   *          The type of keys
+   * @param <V>
+   *          The type of cached values
+   * @param <E>
+   *          The type of exceptions raised by the loader
+   */
 
   public static @Nonnull
     <K, V, E extends Throwable>
@@ -62,24 +109,24 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
 
   private final @Nonnull PCacheConfig               config;
   private @CheckForNull LUCacheEvents<K, V>         events;
-  private final @Nonnull HashSet<K>                 item_removals;
-  private final @Nonnull HashMap<K, CachedValue<V>> items;
-  private final @Nonnull TreeMap<Long, HashSet<K>>  items_by_time;
+  private final @Nonnull Set<K>                     item_removals;
+  private final @Nonnull Map<K, CachedValue<V>>     items;
+  private final @Nonnull NavigableMap<Long, Set<K>> items_by_time;
   private final @Nonnull LUCacheLoader<K, V, E>     loader;
   private boolean                                   period;
   private long                                      time;
   private long                                      used;
 
   private PCacheTrivial(
-    final @Nonnull LUCacheLoader<K, V, E> loader,
-    final @Nonnull PCacheConfig config)
+    final @Nonnull LUCacheLoader<K, V, E> in_loader,
+    final @Nonnull PCacheConfig in_config)
     throws ConstraintError
   {
-    this.loader = Constraints.constrainNotNull(loader, "Loader");
-    this.config = Constraints.constrainNotNull(config, "Configuration");
+    this.loader = Constraints.constrainNotNull(in_loader, "Loader");
+    this.config = Constraints.constrainNotNull(in_config, "Configuration");
     this.items = new HashMap<K, CachedValue<V>>();
     this.item_removals = new HashSet<K>();
-    this.items_by_time = new TreeMap<Long, HashSet<K>>();
+    this.items_by_time = new TreeMap<Long, Set<K>>();
     this.used = 0;
     this.time = 0;
     this.period = false;
@@ -106,9 +153,9 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
     if (this.config.getMaximumAge() > 0) {
       final Long minimum =
         Long.valueOf(this.time - this.config.getMaximumAge());
-      final NavigableMap<Long, HashSet<K>> head =
+      final NavigableMap<Long, Set<K>> head =
         this.items_by_time.headMap(minimum, true);
-      for (final Entry<Long, HashSet<K>> e : head.entrySet()) {
+      for (final Entry<Long, Set<K>> e : head.entrySet()) {
         this.item_removals.addAll(e.getValue());
       }
       this.cachePerformRemovals();
@@ -119,7 +166,7 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
   {
     if (this.config.getMaximumSize() > 0) {
       while (this.used > this.config.getMaximumSize()) {
-        final HashSet<K> keys =
+        final Set<K> keys =
           this.items_by_time.get(this.items_by_time.firstKey());
         assert keys.isEmpty() == false;
         final K k = keys.iterator().next();
@@ -173,8 +220,8 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
     final @Nonnull K key)
   {
     final CachedValue<V> v = this.items.get(key);
-    this.cacheTimeRemoveKey(key, v.time);
-    return this.cachePut(key, v.value, v.size);
+    this.cacheTimeRemoveKey(key, v.getTime());
+    return this.cachePut(key, v.getValue(), v.getSize());
   }
 
   private void cachePerformRemovals()
@@ -195,7 +242,7 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
     final CachedValue<V> cv = new CachedValue<V>(value, t, size);
     this.items.put(key, cv);
 
-    HashSet<K> keys;
+    Set<K> keys;
     if (this.items_by_time.containsKey(t)) {
       keys = this.items_by_time.get(t);
     } else {
@@ -213,21 +260,21 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
   {
     this.eventObjectEvicted(key, existing);
     try {
-      this.loader.luCacheClose(existing.value);
+      this.loader.luCacheClose(existing.getValue());
     } catch (final Throwable x) {
       this.eventObjectCloseError(key, existing, x);
     }
 
-    this.cacheTimeRemoveKey(key, existing.time);
+    this.cacheTimeRemoveKey(key, existing.getTime());
     this.items.remove(key);
-    this.used -= existing.size;
+    this.used -= existing.getSize();
   }
 
   private void cacheTimeRemoveKey(
     final @Nonnull K key,
     final @Nonnull Long t)
   {
-    final HashSet<K> time_keys = this.items_by_time.get(t);
+    final Set<K> time_keys = this.items_by_time.get(t);
     assert time_keys != null;
     assert time_keys.isEmpty() == false;
     time_keys.remove(key);
@@ -245,8 +292,8 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
       try {
         this.events.luCacheEventObjectCloseError(
           key,
-          existing.value,
-          existing.size,
+          existing.getValue(),
+          existing.getSize(),
           x);
       } catch (final Throwable _) {
         // Ignore
@@ -262,8 +309,8 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
       try {
         this.events.luCacheEventObjectEvicted(
           key,
-          existing.value,
-          existing.size);
+          existing.getValue(),
+          existing.getSize());
       } catch (final Throwable _) {
         // Ignore
       }
@@ -290,7 +337,10 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
   {
     if (this.events != null) {
       try {
-        this.events.luCacheEventObjectRetrieved(key, cv.value, cv.size);
+        this.events.luCacheEventObjectRetrieved(
+          key,
+          cv.getValue(),
+          cv.getSize());
       } catch (final Throwable _) {
         // Ignore
       }
@@ -344,7 +394,7 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
 
     final CachedValue<V> cv = this.pcCacheGetActual(key);
     this.eventObjectRetrieved(key, cv);
-    return cv.value;
+    return cv.getValue();
   }
 
   private @Nonnull CachedValue<V> pcCacheGetActual(
@@ -378,6 +428,6 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
       this.period == false,
       "Period has not already begun");
     this.period = true;
-    this.time++;
+    ++this.time;
   }
 }

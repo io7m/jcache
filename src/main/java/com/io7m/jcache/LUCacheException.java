@@ -1,5 +1,5 @@
 /*
- * Copyright © 2013 <code@io7m.com> http://io7m.com
+ * Copyright © 2014 <code@io7m.com> http://io7m.com
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -60,6 +60,16 @@ public final class LUCacheException extends Throwable
     serialVersionUID = -4142305723422812182L;
   }
 
+  /**
+   * Construct an exception indicating that a loader returned <tt>null</tt>.
+   * 
+   * @param key
+   *          The key
+   * @return An exception
+   * @throws ConstraintError
+   *           Iff an internal constraint error occurs.
+   */
+
   static @Nonnull <K> LUCacheException errorLoaderReturnedNull(
     final @Nonnull K key)
     throws ConstraintError
@@ -72,6 +82,21 @@ public final class LUCacheException extends Throwable
       Code.LUCACHE_LOADER_RETURNED_NULL,
       m.toString());
   }
+
+  /**
+   * Construct an exception indicating that an object is too large for the
+   * cache.
+   * 
+   * @param key
+   *          The key
+   * @param size
+   *          The size of the object
+   * @param maximum
+   *          The maximum object size
+   * @return An exception
+   * @throws ConstraintError
+   *           Iff an internal constraint error occurs.
+   */
 
   static @Nonnull <K> LUCacheException errorObjectTooLarge(
     final @Nonnull K key,
@@ -88,6 +113,20 @@ public final class LUCacheException extends Throwable
     m.append(maximum);
     return new LUCacheException(Code.LUCACHE_OBJECT_TOO_LARGE, m.toString());
   }
+
+  /**
+   * Construct an exception indicating that an object returned a negative
+   * size.
+   * 
+   * @param key
+   *          The key
+   * @param size
+   *          The size of the object
+   * 
+   * @return An exception
+   * @throws ConstraintError
+   *           Iff an internal constraint error occurs.
+   */
 
   static @Nonnull <K> LUCacheException errorObjectTooSmall(
     final @Nonnull K key,
@@ -106,13 +145,17 @@ public final class LUCacheException extends Throwable
   private final @Nonnull Code code;
 
   LUCacheException(
-    final @Nonnull Code code,
-    final @Nonnull String message)
+    final @Nonnull Code in_code,
+    final @Nonnull String in_message)
     throws ConstraintError
   {
-    super(message);
-    this.code = Constraints.constrainNotNull(code, "Code");
+    super(in_message);
+    this.code = Constraints.constrainNotNull(in_code, "Code");
   }
+
+  /**
+   * @return The error code for the exception
+   */
 
   public @Nonnull Code getCode()
   {

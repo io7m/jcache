@@ -1,5 +1,5 @@
 /*
- * Copyright © 2013 <code@io7m.com> http://io7m.com
+ * Copyright © 2014 <code@io7m.com> http://io7m.com
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -36,6 +36,13 @@ import com.io7m.jaux.Constraints.ConstraintError;
  * for a given number of periods will be evicted at the end of the current
  * period.
  * </p>
+ * 
+ * @param <K>
+ *          The type of keys
+ * @param <V>
+ *          The type of cached values
+ * @param <E>
+ *          The type of exceptions raised during loading
  */
 
 public interface PCache<K, V, E extends Throwable> extends
@@ -57,6 +64,9 @@ public interface PCache<K, V, E extends Throwable> extends
    *           Iff the object cannot be cached (possibly due to being too
    *           large, or violating other constraints of the particular cache
    *           implementation).
+   * @param key
+   *          The key that identifies the object
+   * @return The cached object
    */
 
   public @Nonnull V pcCacheGet(

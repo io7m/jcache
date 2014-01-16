@@ -1,5 +1,5 @@
 /*
- * Copyright © 2013 <code@io7m.com> http://io7m.com
+ * Copyright © 2014 <code@io7m.com> http://io7m.com
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -17,7 +17,9 @@
 package com.io7m.jcache;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NavigableMap;
 import java.util.TreeMap;
 
 import javax.annotation.CheckForNull;
@@ -30,6 +32,13 @@ import com.io7m.jaux.Constraints.ConstraintError;
 /**
  * A mindlessly simple LRU cache; the oldest objects are evicted from the
  * cache first.
+ * 
+ * @param <K>
+ *          The type of keys
+ * @param <V>
+ *          The type of cached values
+ * @param <E>
+ *          The type of exceptions raised during loading
  */
 
 public final class LRUCacheTrivial<K, V, E extends Throwable> implements
@@ -37,20 +46,54 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
 {
   @Immutable private static final class CachedValue<V>
   {
-    final long       size;
-    final long       time;
-    final @Nonnull V value;
+    private final long       size;
+    private final long       time;
+    private final @Nonnull V value;
 
     CachedValue(
-      final @Nonnull V value,
-      final long time,
-      final long size)
+      final @Nonnull V in_value,
+      final long in_time,
+      final long in_size)
     {
-      this.value = value;
-      this.time = time;
-      this.size = size;
+      this.value = in_value;
+      this.time = in_time;
+      this.size = in_size;
+    }
+
+    public long getSize()
+    {
+      return this.size;
+    }
+
+    public long getTime()
+    {
+      return this.time;
+    }
+
+    public @Nonnull V getValue()
+    {
+      return this.value;
     }
   }
+
+  /**
+   * Construct a new <tt>LRUCache</tt>.
+   * 
+   * @param loader
+   *          The class that will load instances when given keys
+   * @param config
+   *          The cache configuration
+   * @return A new cache instance
+   * @throws ConstraintError
+   *           Iff the loader or configuration are <tt>null</tt>
+   * 
+   * @param <K>
+   *          The type of keys
+   * @param <V>
+   *          The type of cached values
+   * @param <E>
+   *          The type of exceptions raised by the loader
+   */
 
   public static @Nonnull
     <K, V, E extends Throwable>
@@ -63,21 +106,21 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
     return new LRUCacheTrivial<K, V, E>(loader, config);
   }
 
-  private final @Nonnull LRUCacheConfig             config;
-  private @CheckForNull LUCacheEvents<K, V>         events;
-  private long                                      gets;
-  private final @Nonnull HashMap<K, CachedValue<V>> items;
-  private final @Nonnull LUCacheLoader<K, V, E>     loader;
-  private final @Nonnull TreeMap<Long, K>           time_items;
-  private long                                      used;
+  private final @Nonnull LRUCacheConfig         config;
+  private @CheckForNull LUCacheEvents<K, V>     events;
+  private long                                  gets;
+  private final @Nonnull Map<K, CachedValue<V>> items;
+  private final @Nonnull LUCacheLoader<K, V, E> loader;
+  private final @Nonnull NavigableMap<Long, K>  time_items;
+  private long                                  used;
 
   private LRUCacheTrivial(
-    final @Nonnull LUCacheLoader<K, V, E> loader,
-    final @Nonnull LRUCacheConfig config)
+    final @Nonnull LUCacheLoader<K, V, E> in_loader,
+    final @Nonnull LRUCacheConfig in_config)
     throws ConstraintError
   {
-    this.loader = Constraints.constrainNotNull(loader, "Loader");
-    this.config = Constraints.constrainNotNull(config, "Configuration");
+    this.loader = Constraints.constrainNotNull(in_loader, "Loader");
+    this.config = Constraints.constrainNotNull(in_config, "Configuration");
     this.items = new HashMap<K, CachedValue<V>>();
     this.time_items = new TreeMap<Long, K>();
     this.used = 0;
@@ -167,8 +210,8 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
     final @Nonnull K key)
   {
     final CachedValue<V> v = this.items.get(key);
-    this.time_items.remove(Long.valueOf(v.time));
-    return this.cachePut(key, v.value, v.size);
+    this.time_items.remove(Long.valueOf(v.getTime()));
+    return this.cachePut(key, v.getValue(), v.getSize());
   }
 
   private @Nonnull CachedValue<V> cachePut(
@@ -189,13 +232,13 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
   {
     this.eventObjectEvicted(key, existing);
     try {
-      this.loader.luCacheClose(existing.value);
+      this.loader.luCacheClose(existing.getValue());
     } catch (final Throwable x) {
       this.eventObjectCloseError(key, existing, x);
     }
-    this.time_items.remove(Long.valueOf(existing.time));
+    this.time_items.remove(Long.valueOf(existing.getTime()));
     this.items.remove(key);
-    this.used -= existing.size;
+    this.used -= existing.getSize();
   }
 
   private void eventObjectCloseError(
@@ -207,8 +250,8 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
       try {
         this.events.luCacheEventObjectCloseError(
           key,
-          existing.value,
-          existing.size,
+          existing.getValue(),
+          existing.getSize(),
           x);
       } catch (final Throwable _) {
         // Ignore
@@ -224,8 +267,8 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
       try {
         this.events.luCacheEventObjectEvicted(
           key,
-          existing.value,
-          existing.size);
+          existing.getValue(),
+          existing.getSize());
       } catch (final Throwable _) {
         // Ignore
       }
@@ -252,7 +295,10 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
   {
     if (this.events != null) {
       try {
-        this.events.luCacheEventObjectRetrieved(key, cv.value, cv.size);
+        this.events.luCacheEventObjectRetrieved(
+          key,
+          cv.getValue(),
+          cv.getSize());
       } catch (final Throwable _) {
         // Ignore
       }
@@ -296,7 +342,7 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
 
     final CachedValue<V> cv = this.luCacheGetActual(key);
     this.eventObjectRetrieved(key, cv);
-    return cv.value;
+    return cv.getValue();
   }
 
   private @Nonnull CachedValue<V> luCacheGetActual(

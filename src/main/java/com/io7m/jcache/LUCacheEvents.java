@@ -1,5 +1,5 @@
 /*
- * Copyright © 2013 <code@io7m.com> http://io7m.com
+ * Copyright © 2014 <code@io7m.com> http://io7m.com
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,6 +20,11 @@ import javax.annotation.Nonnull;
 
 /**
  * Interface supported by types that can receive cache events.
+ * 
+ * @param <K>
+ *          The type of keys
+ * @param <V>
+ *          The type of cached values
  */
 
 public interface LUCacheEvents<K, V>
@@ -29,6 +34,15 @@ public interface LUCacheEvents<K, V>
    * Called when an object <code>value</code>, associated with
    * <code>key</code>, failed to close due to exception <code>x</code>.
    * </p>
+   * 
+   * @param key
+   *          The key
+   * @param value
+   *          The value
+   * @param size
+   *          The size of <tt>value</tt>
+   * @param x
+   *          The exception raised
    */
 
   public void luCacheEventObjectCloseError(
@@ -42,6 +56,13 @@ public interface LUCacheEvents<K, V>
    * Called when an object <code>value</code> is associated with
    * <code>key</code> is about to be evicted.
    * </p>
+   * 
+   * @param key
+   *          The key
+   * @param value
+   *          The value
+   * @param size
+   *          The size of <tt>value</tt>
    */
 
   public void luCacheEventObjectEvicted(
@@ -54,6 +75,13 @@ public interface LUCacheEvents<K, V>
    * Called when an object <code>value</code> is first loaded, prior to any
    * cache size checks.
    * </p>
+   * 
+   * @param key
+   *          The key
+   * @param value
+   *          The value
+   * @param size
+   *          The size of <tt>value</tt>
    */
 
   public void luCacheEventObjectLoaded(
@@ -66,6 +94,13 @@ public interface LUCacheEvents<K, V>
    * Called when an object <code>value</code> is retrieved via
    * <code>key</code>.
    * </p>
+   * 
+   * @param key
+   *          The key
+   * @param value
+   *          The value
+   * @param size
+   *          The size of <tt>value</tt>
    */
 
   public void luCacheEventObjectRetrieved(

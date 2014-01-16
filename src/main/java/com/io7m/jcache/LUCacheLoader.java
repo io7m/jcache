@@ -1,5 +1,5 @@
 /*
- * Copyright © 2013 <code@io7m.com> http://io7m.com
+ * Copyright © 2014 <code@io7m.com> http://io7m.com
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,12 +21,24 @@ import javax.annotation.Nonnull;
 /**
  * The interface supported by types that can load objects of type
  * <code>V</code>, named <code>K</code>, throwing <code>E</code> on failure.
+ * 
+ * @param <K>
+ *          The type of keys
+ * @param <V>
+ *          The type of cached values
+ * @param <E>
+ *          The type of exceptions raised during loading
  */
 
 public interface LUCacheLoader<K, V, E extends Throwable>
 {
   /**
    * Destroy <code>v</code>, freeing any associated resources.
+   * 
+   * @param v
+   *          The object to destroy
+   * @throws E
+   *           Iff an exception is raised during deletion
    */
 
   public void luCacheClose(
@@ -36,6 +48,12 @@ public interface LUCacheLoader<K, V, E extends Throwable>
   /**
    * Load an object named <code>key</code>, throwing an exception of type
    * <code>E</code> on failure.
+   * 
+   * @return The loaded object
+   * @param key
+   *          The key that identifies the object
+   * @throws E
+   *           Iff loading fails
    */
 
   public @Nonnull V luCacheLoadFrom(
@@ -43,7 +61,9 @@ public interface LUCacheLoader<K, V, E extends Throwable>
     throws E;
 
   /**
-   * Return the size in units of <code>v</code>.
+   * @return The size in units of <code>v</code>.
+   * @param v
+   *          The loaded object
    */
 
   public long luCacheSizeOf(

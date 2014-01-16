@@ -1,5 +1,5 @@
 /*
- * Copyright © 2013 <code@io7m.com> http://io7m.com
+ * Copyright © 2014 <code@io7m.com> http://io7m.com
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,12 +18,19 @@ package com.io7m.jcache;
 
 /**
  * The type of mutable least-recently-used caches.
+ * 
+ * @param <K>
+ *          The type of keys
+ * @param <V>
+ *          The type of cached values
+ * @param <E>
+ *          The type of exceptions raised during loading
  */
 
 public interface LRUCache<K, V, E extends Throwable> extends LUCache<K, V, E>
 {
   /**
-   * Retrieve the configuration for the cache.
+   * @return The configuration for the cache.
    */
 
   public LRUCacheConfig lruCacheConfiguration();
