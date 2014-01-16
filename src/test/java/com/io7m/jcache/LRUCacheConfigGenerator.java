@@ -14,7 +14,7 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package com.io7m.jlucache;
+package com.io7m.jcache;
 
 import javax.annotation.Nonnull;
 
@@ -23,6 +23,7 @@ import net.java.quickcheck.generator.support.LongGenerator;
 
 import com.io7m.jaux.Constraints.ConstraintError;
 import com.io7m.jaux.UnreachableCodeException;
+import com.io7m.jcache.LRUCacheConfig;
 
 public final class LRUCacheConfigGenerator implements
   Generator<LRUCacheConfig>

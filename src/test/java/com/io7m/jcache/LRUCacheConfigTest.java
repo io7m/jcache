@@ -14,13 +14,15 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package com.io7m.jlucache;
+package com.io7m.jcache;
 
 import net.java.quickcheck.QuickCheck;
 import net.java.quickcheck.characteristic.AbstractCharacteristic;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.io7m.jcache.LRUCacheConfig;
 
 public class LRUCacheConfigTest
 {

@@ -14,7 +14,7 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package com.io7m.jlucache;
+package com.io7m.jcache;
 
 import javax.annotation.Nonnull;
 
@@ -24,8 +24,11 @@ import org.junit.Test;
 import com.io7m.jaux.Constraints.ConstraintError;
 import com.io7m.jaux.UnreachableCodeException;
 import com.io7m.jaux.functional.Pair;
-import com.io7m.jlucache.LUCacheException.Code;
-import com.io7m.jlucache.LUCacheLoaderFaultInjectable.Failure;
+import com.io7m.jcache.LRUCacheConfig;
+import com.io7m.jcache.LRUCacheTrivial;
+import com.io7m.jcache.LUCacheException;
+import com.io7m.jcache.LUCacheException.Code;
+import com.io7m.jcache.LUCacheLoaderFaultInjectable.Failure;
 
 public final class LRUCacheTrivialTest
 {

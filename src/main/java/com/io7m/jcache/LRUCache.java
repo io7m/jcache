@@ -14,39 +14,17 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package com.io7m.jlucache;
-
-import com.io7m.jaux.Constraints.ConstraintError;
+package com.io7m.jcache;
 
 /**
- * The type of readable least-used caches, containing objects associated with
- * keys of type <code>K</code>.
+ * The type of mutable least-recently-used caches.
  */
 
-public interface LUCacheReadable<K>
+public interface LRUCache<K, V, E extends Throwable> extends LUCache<K, V, E>
 {
   /**
-   * Return <code>true</code> if an object is cached for <code>key</code>.
-   * 
-   * @throws ConstraintError
-   *           Iff <code>key == null</code>, or an internal constraint error
-   *           occurs.
+   * Retrieve the configuration for the cache.
    */
 
-  public boolean luCacheIsCached(
-    K key)
-    throws ConstraintError;
-
-  /**
-   * Return the number of items cached.
-   */
-
-  public long luCacheItems();
-
-  /**
-   * Return the size of the current cache, in units.
-   */
-
-  public long luCacheSize();
-
+  public LRUCacheConfig lruCacheConfiguration();
 }

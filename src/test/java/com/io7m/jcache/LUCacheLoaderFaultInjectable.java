@@ -14,10 +14,12 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package com.io7m.jlucache;
+package com.io7m.jcache;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+
+import com.io7m.jcache.LUCacheLoader;
 
 /**
  * Loader that fails to load on demand.

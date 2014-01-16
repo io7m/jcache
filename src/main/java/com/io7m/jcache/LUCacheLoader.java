@@ -14,35 +14,38 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package com.io7m.jlucache;
+package com.io7m.jcache;
 
 import javax.annotation.Nonnull;
 
-import com.io7m.jaux.Constraints.ConstraintError;
-
 /**
- * Interface for subscribing to cache events.
+ * The interface supported by types that can load objects of type
+ * <code>V</code>, named <code>K</code>, throwing <code>E</code> on failure.
  */
 
-public interface LUCacheEventsSubscription<K, V>
+public interface LUCacheLoader<K, V, E extends Throwable>
 {
   /**
-   * Subscribe to events for the current cache, replacing any existing
-   * subscriptions (if any). The cache will call functions in the given
-   * interface when events occur.
-   * 
-   * @throws ConstraintError
-   *           Iff <code>events == null</code>.
+   * Destroy <code>v</code>, freeing any associated resources.
    */
 
-  public void luCacheEventsSubscribe(
-    final @Nonnull LUCacheEvents<K, V> events)
-    throws ConstraintError;
+  public void luCacheClose(
+    final @Nonnull V v)
+    throws E;
 
   /**
-   * Stop receiving events for the current cache.
+   * Load an object named <code>key</code>, throwing an exception of type
+   * <code>E</code> on failure.
    */
 
-  public void luCacheEventsUnsubscribe();
+  public @Nonnull V luCacheLoadFrom(
+    final @Nonnull K key)
+    throws E;
 
+  /**
+   * Return the size in units of <code>v</code>.
+   */
+
+  public long luCacheSizeOf(
+    final @Nonnull V v);
 }

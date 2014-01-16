@@ -14,42 +14,19 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package com.io7m.jlucache;
+package com.io7m.jcache;
 
-class EventCount<K, V> implements LUCacheEvents<K, V>
+import com.io7m.jcache.LUCacheEvents;
+
+class EventThrown<K, V> implements LUCacheEvents<K, V>
 {
-  private int close_errors;
-  private int evictions;
-  private int loads;
-  private int retrievals;
-
-  public int getCloseErrors()
-  {
-    return this.close_errors;
-  }
-
-  public int getEvictions()
-  {
-    return this.evictions;
-  }
-
-  public int getLoads()
-  {
-    return this.loads;
-  }
-
-  public int getRetrievals()
-  {
-    return this.retrievals;
-  }
-
   @Override public void luCacheEventObjectCloseError(
     final K key,
     final V value,
     final long size,
     final Throwable x)
   {
-    ++this.close_errors;
+    throw new AssertionError("Close error");
   }
 
   @Override public void luCacheEventObjectEvicted(
@@ -57,7 +34,7 @@ class EventCount<K, V> implements LUCacheEvents<K, V>
     final V value,
     final long size)
   {
-    ++this.evictions;
+    throw new AssertionError("Evicted");
   }
 
   @Override public void luCacheEventObjectLoaded(
@@ -65,7 +42,7 @@ class EventCount<K, V> implements LUCacheEvents<K, V>
     final V value,
     final long size)
   {
-    ++this.loads;
+    throw new AssertionError("Loaded");
   }
 
   @Override public void luCacheEventObjectRetrieved(
@@ -73,6 +50,6 @@ class EventCount<K, V> implements LUCacheEvents<K, V>
     final V value,
     final long size)
   {
-    ++this.retrievals;
+    throw new AssertionError("Retrieved");
   }
 }

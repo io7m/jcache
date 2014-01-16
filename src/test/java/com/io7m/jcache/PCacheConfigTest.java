@@ -14,7 +14,7 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package com.io7m.jlucache;
+package com.io7m.jcache;
 
 import javax.annotation.Nonnull;
 
@@ -26,7 +26,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.io7m.jaux.Constraints.ConstraintError;
-import com.io7m.jlucache.PCacheConfig.Builder;
+import com.io7m.jcache.PCacheConfig;
+import com.io7m.jcache.PCacheConfig.Builder;
 
 public final class PCacheConfigTest
 {

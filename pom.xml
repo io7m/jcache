@@ -4,13 +4,13 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.io7m.jlucache</groupId>
-  <artifactId>io7m-jlucache</artifactId>
-  <version>0.2.1</version>
+  <groupId>com.io7m.jcache</groupId>
+  <artifactId>io7m-jcache</artifactId>
+  <version>0.3.0</version>
   <packaging>jar</packaging>
-  <name>io7m-jlucache</name>
-  <description>Generic least-used cache algorithms</description>
-  <url>http://mvn.io7m.com/jlucache/</url>
+  <name>io7m-jcache</name>
+  <description>Generic cache algorithms</description>
+  <url>http://mvn.io7m.com/jcache/</url>
 
   <licenses>
     <license>
@@ -20,9 +20,9 @@
   </licenses>
 
   <scm>
-    <url>http://fossil.io7m.com/repo.cgi/io7m-jlucache</url>
-    <connection>scm:http://fossil.io7m.com/repo.cgi/io7m-jlucache</connection>
-    <developerConnection>scm:http://fossil.io7m.com/repo.cgi/io7m-jlucache</developerConnection>
+    <url>http://fossil.io7m.com/repo.cgi/io7m-jcache</url>
+    <connection>scm:http://fossil.io7m.com/repo.cgi/io7m-jcache</connection>
+    <developerConnection>scm:http://fossil.io7m.com/repo.cgi/io7m-jcache</developerConnection>
   </scm>
 
   <developers>
@@ -35,7 +35,7 @@
   </developers>
 
   <issueManagement>
-    <url>http://fossil.io7m.com/repo.cgi/io7m-jlucache</url>
+    <url>http://fossil.io7m.com/repo.cgi/io7m-jcache</url>
     <system>Fossil</system>
   </issueManagement>
 
@@ -43,7 +43,7 @@
     <site>
       <id>io7m</id>
       <name>io7m.com</name>
-      <url>http://mvn.io7m.com/jlucache/</url>
+      <url>http://mvn.io7m.com/jcache/</url>
     </site>
   </distributionManagement>
 
@@ -167,7 +167,7 @@
               <Built-By>io7m</Built-By>
             </manifestEntries>
             <manifestSection>
-              <name>com/io7m/jlucache</name>
+              <name>com/io7m/jcache</name>
               <manifestEntries>
                 <Sealed>true</Sealed>
               </manifestEntries>

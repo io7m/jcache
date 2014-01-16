@@ -14,12 +14,10 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package com.io7m.jlucache;
+package com.io7m.jcache;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map.Entry;
-import java.util.NavigableMap;
 import java.util.TreeMap;
 
 import javax.annotation.CheckForNull;
@@ -29,18 +27,23 @@ import javax.annotation.concurrent.Immutable;
 import com.io7m.jaux.Constraints;
 import com.io7m.jaux.Constraints.ConstraintError;
 
-public final class PCacheTrivial<K, V, E extends Throwable> implements
-  PCache<K, V, E>
+/**
+ * A mindlessly simple LRU cache; the oldest objects are evicted from the
+ * cache first.
+ */
+
+public final class LRUCacheTrivial<K, V, E extends Throwable> implements
+  LRUCache<K, V, E>
 {
   @Immutable private static final class CachedValue<V>
   {
-    final long          size;
-    final @Nonnull Long time;
-    final @Nonnull V    value;
+    final long       size;
+    final long       time;
+    final @Nonnull V value;
 
-    public CachedValue(
+    CachedValue(
       final @Nonnull V value,
-      final @Nonnull Long time,
+      final long time,
       final long size)
     {
       this.value = value;
@@ -51,38 +54,34 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
 
   public static @Nonnull
     <K, V, E extends Throwable>
-    PCache<K, V, E>
+    LRUCacheTrivial<K, V, E>
     newCache(
       final @Nonnull LUCacheLoader<K, V, E> loader,
-      final @Nonnull PCacheConfig config)
+      final @Nonnull LRUCacheConfig config)
       throws ConstraintError
   {
-    return new PCacheTrivial<K, V, E>(loader, config);
+    return new LRUCacheTrivial<K, V, E>(loader, config);
   }
 
-  private final @Nonnull PCacheConfig               config;
+  private final @Nonnull LRUCacheConfig             config;
   private @CheckForNull LUCacheEvents<K, V>         events;
-  private final @Nonnull HashSet<K>                 item_removals;
+  private long                                      gets;
   private final @Nonnull HashMap<K, CachedValue<V>> items;
-  private final @Nonnull TreeMap<Long, HashSet<K>>  items_by_time;
   private final @Nonnull LUCacheLoader<K, V, E>     loader;
-  private boolean                                   period;
-  private long                                      time;
+  private final @Nonnull TreeMap<Long, K>           time_items;
   private long                                      used;
 
-  private PCacheTrivial(
+  private LRUCacheTrivial(
     final @Nonnull LUCacheLoader<K, V, E> loader,
-    final @Nonnull PCacheConfig config)
+    final @Nonnull LRUCacheConfig config)
     throws ConstraintError
   {
     this.loader = Constraints.constrainNotNull(loader, "Loader");
     this.config = Constraints.constrainNotNull(config, "Configuration");
     this.items = new HashMap<K, CachedValue<V>>();
-    this.item_removals = new HashSet<K>();
-    this.items_by_time = new TreeMap<Long, HashSet<K>>();
+    this.time_items = new TreeMap<Long, K>();
     this.used = 0;
-    this.time = 0;
-    this.period = false;
+    this.gets = 0;
     this.events = null;
   }
 
@@ -95,38 +94,33 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
     return this.cachePut(key, new_value, size);
   }
 
-  private void cacheEvictItems()
+  private void cacheEvictOldest()
   {
-    this.cacheEvictItemsByAgeIfNecessary();
-    this.cacheEvictItemsBySizeIfNecessary();
+    final Entry<Long, K> eleast = this.time_items.firstEntry();
+    assert eleast != null;
+    final CachedValue<V> old_cached = this.items.get(eleast.getValue());
+    this.cacheRemove(eleast.getValue(), old_cached);
   }
 
-  private void cacheEvictItemsByAgeIfNecessary()
+  private void cacheEvictOldestItems(
+    final long added_size,
+    final long maximum)
   {
-    if (this.config.getMaximumAge() > 0) {
-      final Long minimum =
-        Long.valueOf(this.time - this.config.getMaximumAge());
-      final NavigableMap<Long, HashSet<K>> head =
-        this.items_by_time.headMap(minimum, true);
-      for (final Entry<Long, HashSet<K>> e : head.entrySet()) {
-        this.item_removals.addAll(e.getValue());
-      }
-      this.cachePerformRemovals();
-    }
-  }
+    assert added_size <= maximum;
 
-  private void cacheEvictItemsBySizeIfNecessary()
-  {
-    if (this.config.getMaximumSize() > 0) {
-      while (this.used > this.config.getMaximumSize()) {
-        final HashSet<K> keys =
-          this.items_by_time.get(this.items_by_time.firstKey());
-        assert keys.isEmpty() == false;
-        final K k = keys.iterator().next();
-        this.item_removals.add(k);
-        this.cachePerformRemovals();
+    /**
+     * Because objects larger than the capacity cannot be inserted into the
+     * map, at least one object must exist if <code>used</code> is nonzero.
+     */
+
+    for (;;) {
+      if ((this.used + added_size) <= maximum) {
+        break;
       }
+      this.cacheEvictOldest();
     }
+
+    assert (this.used + added_size) <= maximum;
   }
 
   private @Nonnull CachedValue<V> cacheGetAddingNew(
@@ -151,12 +145,12 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
         throw LUCacheException.errorObjectTooSmall(key, size);
       }
 
-      final long maximum = this.config.getMaximumSize();
-      if (maximum > 0) {
-        if (size > maximum) {
-          throw LUCacheException.errorObjectTooLarge(key, size, maximum);
-        }
+      final long maximum = this.config.getMaximumCapacity();
+      if (size > maximum) {
+        throw LUCacheException.errorObjectTooLarge(key, size, maximum);
       }
+
+      this.cacheEvictOldestItems(size, maximum);
 
       failed = false;
       return this.cacheAdd(key, new_value, size);
@@ -173,37 +167,19 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
     final @Nonnull K key)
   {
     final CachedValue<V> v = this.items.get(key);
-    this.cacheTimeRemoveKey(key, v.time);
+    this.time_items.remove(Long.valueOf(v.time));
     return this.cachePut(key, v.value, v.size);
-  }
-
-  private void cachePerformRemovals()
-  {
-    for (final K key : this.item_removals) {
-      this.cacheRemove(key, this.items.get(key));
-    }
-
-    this.item_removals.clear();
   }
 
   private @Nonnull CachedValue<V> cachePut(
     final @Nonnull K key,
-    final @Nonnull V value,
+    final @Nonnull V new_value,
     final long size)
   {
-    final Long t = Long.valueOf(this.time);
-    final CachedValue<V> cv = new CachedValue<V>(value, t, size);
+    this.gets += 1;
+    final CachedValue<V> cv = new CachedValue<V>(new_value, this.gets, size);
     this.items.put(key, cv);
-
-    HashSet<K> keys;
-    if (this.items_by_time.containsKey(t)) {
-      keys = this.items_by_time.get(t);
-    } else {
-      keys = new HashSet<K>();
-      this.items_by_time.put(t, keys);
-    }
-    keys.add(key);
-
+    this.time_items.put(Long.valueOf(this.gets), key);
     return cv;
   }
 
@@ -217,23 +193,9 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
     } catch (final Throwable x) {
       this.eventObjectCloseError(key, existing, x);
     }
-
-    this.cacheTimeRemoveKey(key, existing.time);
+    this.time_items.remove(Long.valueOf(existing.time));
     this.items.remove(key);
     this.used -= existing.size;
-  }
-
-  private void cacheTimeRemoveKey(
-    final @Nonnull K key,
-    final @Nonnull Long t)
-  {
-    final HashSet<K> time_keys = this.items_by_time.get(t);
-    assert time_keys != null;
-    assert time_keys.isEmpty() == false;
-    time_keys.remove(key);
-    if (time_keys.isEmpty()) {
-      this.items_by_time.remove(t);
-    }
   }
 
   private void eventObjectCloseError(
@@ -297,10 +259,19 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
     }
   }
 
+  @Override public @Nonnull LRUCacheConfig lruCacheConfiguration()
+  {
+    return this.config;
+  }
+
   @Override public void luCacheDelete()
   {
-    this.item_removals.addAll(this.items.keySet());
-    this.cachePerformRemovals();
+    while (this.items.size() > 0) {
+      this.cacheEvictOldest();
+    }
+
+    assert this.time_items.size() == 0;
+    assert this.items.size() == 0;
   }
 
   @Override public void luCacheEventsSubscribe(
@@ -313,6 +284,32 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
   @Override public void luCacheEventsUnsubscribe()
   {
     this.events = null;
+  }
+
+  @Override public @Nonnull V luCacheGet(
+    final @Nonnull K key)
+    throws ConstraintError,
+      E,
+      LUCacheException
+  {
+    Constraints.constrainNotNull(key, "Key");
+
+    final CachedValue<V> cv = this.luCacheGetActual(key);
+    this.eventObjectRetrieved(key, cv);
+    return cv.value;
+  }
+
+  private @Nonnull CachedValue<V> luCacheGetActual(
+    final @Nonnull K key)
+    throws ConstraintError,
+      E,
+      LUCacheException
+  {
+    if (this.luCacheIsCached(key)) {
+      return this.cacheGetReplace(key);
+    }
+
+    return this.cacheGetAddingNew(key);
   }
 
   @Override public boolean luCacheIsCached(
@@ -333,51 +330,16 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
     return this.used;
   }
 
-  @Override public V pcCacheGet(
-    final @Nonnull K key)
-    throws ConstraintError,
-      E,
-      LUCacheException
+  @Override public String toString()
   {
-    Constraints.constrainNotNull(key, "Key");
-    Constraints.constrainArbitrary(this.period, "Period has begun");
+    final StringBuilder builder = new StringBuilder();
+    builder.append("[LRUCacheTrivial ");
 
-    final CachedValue<V> cv = this.pcCacheGetActual(key);
-    this.eventObjectRetrieved(key, cv);
-    return cv.value;
-  }
+    builder.append("[size ");
+    builder.append(this.used);
+    builder.append("]");
 
-  private @Nonnull CachedValue<V> pcCacheGetActual(
-    final @Nonnull K key)
-    throws ConstraintError,
-      E,
-      LUCacheException
-  {
-    if (this.luCacheIsCached(key)) {
-      return this.cacheGetReplace(key);
-    }
-
-    return this.cacheGetAddingNew(key);
-  }
-
-  @Override public void pcPeriodEnd()
-    throws ConstraintError
-  {
-    Constraints.constrainArbitrary(
-      this.period == true,
-      "Period has not already ended");
-    this.period = false;
-
-    this.cacheEvictItems();
-  }
-
-  @Override public void pcPeriodStart()
-    throws ConstraintError
-  {
-    Constraints.constrainArbitrary(
-      this.period == false,
-      "Period has not already begun");
-    this.period = true;
-    this.time++;
+    builder.append("]");
+    return builder.toString();
   }
 }

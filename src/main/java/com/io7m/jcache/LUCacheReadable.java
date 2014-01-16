@@ -14,17 +14,39 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package com.io7m.jlucache;
+package com.io7m.jcache;
+
+import com.io7m.jaux.Constraints.ConstraintError;
 
 /**
- * The type of mutable caches that can be deleted.
+ * The type of readable least-used caches, containing objects associated with
+ * keys of type <code>K</code>.
  */
 
-public interface LUCacheDeletable
+public interface LUCacheReadable<K>
 {
   /**
-   * Delete all cached items.
+   * Return <code>true</code> if an object is cached for <code>key</code>.
+   * 
+   * @throws ConstraintError
+   *           Iff <code>key == null</code>, or an internal constraint error
+   *           occurs.
    */
 
-  public void luCacheDelete();
+  public boolean luCacheIsCached(
+    K key)
+    throws ConstraintError;
+
+  /**
+   * Return the number of items cached.
+   */
+
+  public long luCacheItems();
+
+  /**
+   * Return the size of the current cache, in units.
+   */
+
+  public long luCacheSize();
+
 }

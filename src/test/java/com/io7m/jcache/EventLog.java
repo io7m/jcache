@@ -14,7 +14,9 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package com.io7m.jlucache;
+package com.io7m.jcache;
+
+import com.io7m.jcache.LUCacheEvents;
 
 class EventLog<K, V> implements LUCacheEvents<K, V>
 {
