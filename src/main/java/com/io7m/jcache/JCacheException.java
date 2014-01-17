@@ -53,13 +53,30 @@ public final class JCacheException extends Throwable
      * one unit.
      */
 
-    LUCACHE_OBJECT_TOO_SMALL
+    LUCACHE_OBJECT_TOO_SMALL,
+
+    /**
+     * The cache cannot grow larger than {@link Integer#MAX_VALUE} items.
+     */
+
+    LUCACHE_TOO_LARGE
   }
 
   private static final long serialVersionUID;
 
   static {
     serialVersionUID = -4142305723422812182L;
+  }
+
+  static @Nonnull JCacheException errorInternalCacheOverflow(
+    final int size)
+    throws ConstraintError
+  {
+    final StringBuilder m = new StringBuilder();
+    m.append("The cache cannot accept more than ");
+    m.append(size);
+    m.append(" items due to limitations in the Java standard library");
+    return new JCacheException(Code.LUCACHE_TOO_LARGE, m.toString());
   }
 
   /**
