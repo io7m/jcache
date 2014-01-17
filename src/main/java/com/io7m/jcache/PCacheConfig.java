@@ -16,6 +16,8 @@
 
 package com.io7m.jcache;
 
+import java.math.BigInteger;
+
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
@@ -48,13 +50,13 @@ import com.io7m.jaux.Constraints.ConstraintError;
      * @return The current maximum age.
      */
 
-    public long getMaximumAge();
+    public @Nonnull BigInteger getMaximumAge();
 
     /**
      * @return The current maximum size, in units.
      */
 
-    public long getMaximumSize();
+    public @Nonnull BigInteger getMaximumSize();
 
     /**
      * Set the current maximum age.
@@ -66,7 +68,7 @@ import com.io7m.jaux.Constraints.ConstraintError;
      */
 
     public void setMaximumAge(
-      final long age)
+      final @Nonnull BigInteger age)
       throws ConstraintError;
 
     /**
@@ -79,7 +81,7 @@ import com.io7m.jaux.Constraints.ConstraintError;
      */
 
     public void setMaximumSize(
-      final long size)
+      final @Nonnull BigInteger size)
       throws ConstraintError;
 
     /**
@@ -102,8 +104,8 @@ import com.io7m.jaux.Constraints.ConstraintError;
   public static @Nonnull Builder newBuilder()
   {
     return new Builder() {
-      private long maximum_age  = 1;
-      private long maximum_size = 1;
+      private BigInteger maximum_age  = BigInteger.ONE;
+      private BigInteger maximum_size = BigInteger.ONE;
 
       @SuppressWarnings("synthetic-access") @Override public
         PCacheConfig
@@ -113,59 +115,66 @@ import com.io7m.jaux.Constraints.ConstraintError;
         return new PCacheConfig(this.maximum_size, this.maximum_age);
       }
 
-      @Override public long getMaximumAge()
+      @Override public BigInteger getMaximumAge()
       {
         return this.maximum_age;
       }
 
-      @Override public long getMaximumSize()
+      @Override public BigInteger getMaximumSize()
       {
         return this.maximum_size;
       }
 
       @Override public void setMaximumAge(
-        final long age)
+        final @Nonnull BigInteger age)
         throws ConstraintError
       {
-        this.maximum_age =
-          Constraints.constrainRange(age, 1, Long.MAX_VALUE, "Maximum age");
+        Constraints.constrainNotNull(age, "Maximum age");
+        Constraints.constrainArbitrary(
+          age.compareTo(BigInteger.ZERO) > 0,
+          "Maximum age is > 0");
+        this.maximum_age = age;
       }
 
       @Override public void setMaximumSize(
-        final long size)
+        final @Nonnull BigInteger size)
         throws ConstraintError
       {
-        this.maximum_size =
-          Constraints.constrainRange(size, 1, Long.MAX_VALUE, "Maximum size");
+        Constraints.constrainNotNull(size, "Maximum size");
+        Constraints.constrainArbitrary(
+          size.compareTo(BigInteger.ZERO) > 0,
+          "Maximum age is > 0");
+        this.maximum_size = size;
+
       }
 
       @Override public void setNoMaximumAge()
       {
-        this.maximum_age = 0;
+        this.maximum_age = BigInteger.ZERO;
       }
 
       @Override public void setNoMaximumSize()
       {
-        this.maximum_size = 0;
+        this.maximum_size = BigInteger.ZERO;
       }
     };
   }
 
-  private final long maximum_age;
-  private final long maximum_size;
+  private final BigInteger maximum_age;
+  private final BigInteger maximum_size;
 
   private PCacheConfig(
-    final long max_size,
-    final long max_age)
+    final BigInteger max_size,
+    final BigInteger max_age)
     throws ConstraintError
   {
     Constraints.constrainArbitrary(
-      (max_age > 0) || (max_size > 0),
+      (max_age.compareTo(BigInteger.ZERO) > 0)
+        || (max_size.compareTo(BigInteger.ZERO) > 0),
       "Either maximum age or size is non-zero");
-    this.maximum_size =
-      Constraints.constrainRange(max_size, 0, Long.MAX_VALUE, "Maximum size");
-    this.maximum_age =
-      Constraints.constrainRange(max_age, 0, Long.MAX_VALUE, "Maximum age");
+
+    this.maximum_age = max_age;
+    this.maximum_size = max_size;
   }
 
   @Override public boolean equals(
@@ -201,7 +210,7 @@ import com.io7m.jaux.Constraints.ConstraintError;
    *         is no maximum age.
    */
 
-  public long getMaximumAge()
+  public BigInteger getMaximumAge()
   {
     return this.maximum_age;
   }
@@ -211,7 +220,7 @@ import com.io7m.jaux.Constraints.ConstraintError;
    *         there is no maximum size.
    */
 
-  public long getMaximumSize()
+  public BigInteger getMaximumSize()
   {
     return this.maximum_size;
   }
@@ -220,11 +229,8 @@ import com.io7m.jaux.Constraints.ConstraintError;
   {
     final int prime = 31;
     int result = 1;
-    result =
-      (prime * result) + (int) (this.maximum_age ^ (this.maximum_age >>> 32));
-    result =
-      (prime * result)
-        + (int) (this.maximum_size ^ (this.maximum_size >>> 32));
+    result = (prime * result) + this.maximum_age.hashCode();
+    result = (prime * result) + this.maximum_size.hashCode();
     return result;
   }
 

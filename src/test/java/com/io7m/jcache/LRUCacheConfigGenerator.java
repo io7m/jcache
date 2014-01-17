@@ -16,6 +16,8 @@
 
 package com.io7m.jcache;
 
+import java.math.BigInteger;
+
 import javax.annotation.Nonnull;
 
 import net.java.quickcheck.Generator;
@@ -23,7 +25,6 @@ import net.java.quickcheck.generator.support.LongGenerator;
 
 import com.io7m.jaux.Constraints.ConstraintError;
 import com.io7m.jaux.UnreachableCodeException;
-import com.io7m.jcache.LRUCacheConfig;
 
 public final class LRUCacheConfigGenerator implements
   Generator<LRUCacheConfig>
@@ -37,7 +38,7 @@ public final class LRUCacheConfigGenerator implements
 
   @SuppressWarnings("boxing") @Override public @Nonnull LRUCacheConfig next()
   {
-    final long max_capacity = this.long_gen.next();
+    final BigInteger max_capacity = BigInteger.valueOf(this.long_gen.next());
     try {
       return LRUCacheConfig.empty().withMaximumCapacity(max_capacity);
     } catch (final ConstraintError e) {

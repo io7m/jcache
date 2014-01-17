@@ -16,13 +16,13 @@
 
 package com.io7m.jcache;
 
+import java.math.BigInteger;
+
 import net.java.quickcheck.QuickCheck;
 import net.java.quickcheck.characteristic.AbstractCharacteristic;
 
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.io7m.jcache.LRUCacheConfig;
 
 public class LRUCacheConfigTest
 {
@@ -41,7 +41,8 @@ public class LRUCacheConfigTest
           Assert.assertEquals(config, new LRUCacheConfig(config));
 
           final LRUCacheConfig diff =
-            config.withMaximumCapacity(config.getMaximumCapacity() + 1);
+            config.withMaximumCapacity(config.getMaximumCapacity().add(
+              BigInteger.ONE));
           Assert.assertFalse(config.equals(diff));
 
           Assert.assertTrue(config.hashCode() == config.hashCode());

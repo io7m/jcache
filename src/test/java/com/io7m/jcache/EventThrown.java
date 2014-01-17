@@ -16,39 +16,39 @@
 
 package com.io7m.jcache;
 
-import com.io7m.jcache.LUCacheEvents;
+import java.math.BigInteger;
 
-class EventThrown<K, V> implements LUCacheEvents<K, V>
+class EventThrown<K, V> implements JCacheEvents<K, V>
 {
-  @Override public void luCacheEventObjectCloseError(
+  @Override public void cacheEventValueCloseError(
     final K key,
     final V value,
-    final long size,
+    final BigInteger size,
     final Throwable x)
   {
     throw new AssertionError("Close error");
   }
 
-  @Override public void luCacheEventObjectEvicted(
+  @Override public void cacheEventValueEvicted(
     final K key,
     final V value,
-    final long size)
+    final BigInteger size)
   {
     throw new AssertionError("Evicted");
   }
 
-  @Override public void luCacheEventObjectLoaded(
+  @Override public void cacheEventValueLoaded(
     final K key,
     final V value,
-    final long size)
+    final BigInteger size)
   {
     throw new AssertionError("Loaded");
   }
 
-  @Override public void luCacheEventObjectRetrieved(
+  @Override public void cacheEventValueRetrieved(
     final K key,
     final V value,
-    final long size)
+    final BigInteger size)
   {
     throw new AssertionError("Retrieved");
   }

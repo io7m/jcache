@@ -16,19 +16,15 @@
 
 package com.io7m.jcache;
 
+import java.math.BigInteger;
+
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.io7m.jaux.Constraints.ConstraintError;
 import com.io7m.jaux.UnreachableCodeException;
 import com.io7m.jaux.functional.Pair;
-import com.io7m.jcache.LRUCacheConfig;
-import com.io7m.jcache.LRUCacheTrivial;
-import com.io7m.jcache.LUCacheException;
-import com.io7m.jcache.PCache;
-import com.io7m.jcache.PCacheConfig;
-import com.io7m.jcache.PCacheTrivial;
-import com.io7m.jcache.LUCacheException.Code;
+import com.io7m.jcache.JCacheException.Code;
 import com.io7m.jcache.LUCacheLoaderFaultInjectable.Failure;
 import com.io7m.jcache.PCacheConfig.Builder;
 
@@ -61,7 +57,7 @@ public final class PCacheTrivialTest
       PCache<String, Integer, Failure> pc;
       PCacheConfig c;
       final Builder b = PCacheConfig.newBuilder();
-      b.setMaximumAge(age);
+      b.setMaximumAge(BigInteger.valueOf(age));
       b.setNoMaximumSize();
       c = b.create();
       final LUCacheLoaderFaultInjectable<String, Integer> loader =
@@ -85,7 +81,7 @@ public final class PCacheTrivialTest
       PCacheConfig c;
       final Builder b = PCacheConfig.newBuilder();
       b.setNoMaximumAge();
-      b.setMaximumSize(size);
+      b.setMaximumSize(BigInteger.valueOf(size));
       c = b.create();
       final LUCacheLoaderFaultInjectable<String, Integer> loader =
         new LUCacheLoaderFaultInjectable<String, Integer>();
@@ -101,81 +97,81 @@ public final class PCacheTrivialTest
   /**
    * Events are delivered.
    * 
-   * @throws LUCacheException
+   * @throws JCacheException
    */
 
   @SuppressWarnings("boxing") @Test public void testEvents()
     throws Failure,
       ConstraintError,
-      LUCacheException
+      JCacheException
   {
     final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(2);
 
     final EventLog<String, Integer> ev = new EventLog<String, Integer>();
-    pair.first.luCacheEventsSubscribe(ev);
+    pair.first.cacheEventsSubscribe(ev);
 
     pair.second.setFailure(false);
     pair.second.setLoadedValue(0);
-    pair.second.setLoadedValueSize(1);
+    pair.second.setLoadedValueSize(BigInteger.ONE);
 
     ev.reset();
-    pair.first.pcPeriodStart();
-    pair.first.pcCacheGet("key0");
+    pair.first.cachePeriodStart();
+    pair.first.cacheGetPeriodic("key0");
     Assert.assertTrue(ev.loaded);
     Assert.assertEquals("key0", ev.loaded_key);
     Assert.assertEquals(Integer.valueOf(0), ev.loaded_value);
-    Assert.assertEquals(1, ev.loaded_size);
+    Assert.assertEquals(BigInteger.ONE, ev.loaded_size);
     Assert.assertTrue(ev.retrieved);
     Assert.assertEquals("key0", ev.retrieved_key);
     Assert.assertEquals(Integer.valueOf(0), ev.retrieved_value);
-    Assert.assertEquals(1, ev.retrieved_size);
+    Assert.assertEquals(BigInteger.ONE, ev.retrieved_size);
 
     pair.second.setFailure(false);
     pair.second.setLoadedValue(1);
-    pair.second.setLoadedValueSize(1);
+    pair.second.setLoadedValueSize(BigInteger.ONE);
 
     ev.reset();
-    pair.first.pcCacheGet("key1");
+    pair.first.cacheGetPeriodic("key1");
     Assert.assertTrue(ev.loaded);
     Assert.assertEquals("key1", ev.loaded_key);
     Assert.assertEquals(Integer.valueOf(1), ev.loaded_value);
-    Assert.assertEquals(1, ev.loaded_size);
+    Assert.assertEquals(BigInteger.ONE, ev.loaded_size);
     Assert.assertTrue(ev.retrieved);
     Assert.assertEquals("key1", ev.retrieved_key);
     Assert.assertEquals(Integer.valueOf(1), ev.retrieved_value);
-    Assert.assertEquals(1, ev.retrieved_size);
+    Assert.assertEquals(BigInteger.ONE, ev.retrieved_size);
 
     for (int i = 2; i < 10; ++i) {
       pair.second.setFailure(false);
       pair.second.setLoadedValue(i);
-      pair.second.setLoadedValueSize(1);
+      pair.second.setLoadedValueSize(BigInteger.ONE);
 
       ev.reset();
-      pair.first.pcCacheGet("key" + i);
+      pair.first.cacheGetPeriodic("key" + i);
 
       Assert.assertTrue(ev.loaded);
       Assert.assertEquals("key" + i, ev.loaded_key);
       Assert.assertEquals(Integer.valueOf(i), ev.loaded_value);
-      Assert.assertEquals(1, ev.loaded_size);
+      Assert.assertEquals(BigInteger.ONE, ev.loaded_size);
 
       Assert.assertTrue(ev.retrieved);
       Assert.assertEquals("key" + i, ev.retrieved_key);
       Assert.assertEquals(Integer.valueOf(i), ev.retrieved_value);
-      Assert.assertEquals(1, ev.retrieved_size);
+      Assert.assertEquals(BigInteger.ONE, ev.retrieved_size);
 
       Assert.assertFalse(ev.evicted);
     }
 
-    pair.first.luCacheEventsUnsubscribe();
+    pair.first.cacheEventsUnsubscribe();
 
     for (int i = 2; i < 10; ++i) {
       pair.second.setFailure(false);
       pair.second.setLoadedValue(i);
-      pair.second.setLoadedValueSize(1);
+      pair.second.setLoadedValueSize(BigInteger.ONE);
 
       ev.reset();
-      pair.first.pcCacheGet("key" + i);
+      pair.first.cacheGetPeriodic("key" + i);
 
       Assert.assertFalse(ev.loaded);
       Assert.assertFalse(ev.retrieved);
@@ -186,38 +182,38 @@ public final class PCacheTrivialTest
   /**
    * Exceptions raised during closing are delivered.
    * 
-   * @throws LUCacheException
+   * @throws JCacheException
    */
 
   @SuppressWarnings("boxing") @Test public void testEventsCloseError()
     throws Failure,
       ConstraintError,
-      LUCacheException
+      JCacheException
   {
     final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(1);
 
     final EventLog<String, Integer> ev = new EventLog<String, Integer>();
-    pair.first.luCacheEventsSubscribe(ev);
+    pair.first.cacheEventsSubscribe(ev);
 
     ev.reset();
-    pair.first.pcPeriodStart();
+    pair.first.cachePeriodStart();
     pair.second.setFailure(false);
     pair.second.setLoadedValue(0);
-    pair.second.setLoadedValueSize(1);
-    pair.first.pcCacheGet("key0");
+    pair.second.setLoadedValueSize(BigInteger.ONE);
+    pair.first.cacheGetPeriodic("key0");
     Assert.assertTrue(ev.loaded);
     Assert.assertEquals("key0", ev.loaded_key);
     Assert.assertEquals(Integer.valueOf(0), ev.loaded_value);
-    Assert.assertEquals(1, ev.loaded_size);
+    Assert.assertEquals(BigInteger.ONE, ev.loaded_size);
 
     ev.reset();
     pair.second.setFailure(false);
     pair.second.setLoadedValue(1);
-    pair.second.setLoadedValueSize(1);
+    pair.second.setLoadedValueSize(BigInteger.ONE);
     pair.second.setCloseFailure(true);
-    pair.first.pcPeriodEnd();
-    pair.first.luCacheDelete();
+    pair.first.cachePeriodEnd();
+    pair.first.cacheDelete();
 
     Assert.assertTrue(ev.close_error);
     Assert.assertEquals("key0", ev.close_error_key);
@@ -227,179 +223,179 @@ public final class PCacheTrivialTest
   /**
    * Exceptions are not propagated.
    * 
-   * @throws LUCacheException
+   * @throws JCacheException
    */
 
   @SuppressWarnings("boxing") @Test public void testEventsExceptions()
     throws Failure,
       ConstraintError,
-      LUCacheException
+      JCacheException
   {
     final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(2);
 
-    pair.first.pcPeriodStart();
-    pair.first.luCacheEventsSubscribe(new EventThrown<String, Integer>());
+    pair.first.cachePeriodStart();
+    pair.first.cacheEventsSubscribe(new EventThrown<String, Integer>());
     pair.second.setFailure(false);
     pair.second.setLoadedValue(0);
-    pair.second.setLoadedValueSize(1);
+    pair.second.setLoadedValueSize(BigInteger.ONE);
 
-    pair.first.pcCacheGet("key0");
+    pair.first.cacheGetPeriodic("key0");
     pair.second.setFailure(false);
     pair.second.setLoadedValue(1);
-    pair.second.setLoadedValueSize(1);
+    pair.second.setLoadedValueSize(BigInteger.ONE);
 
-    pair.first.pcCacheGet("key1");
+    pair.first.cacheGetPeriodic("key1");
 
     for (int i = 2; i < 10; ++i) {
       pair.second.setFailure(false);
       pair.second.setLoadedValue(i);
-      pair.second.setLoadedValueSize(1);
+      pair.second.setLoadedValueSize(BigInteger.ONE);
 
-      pair.first.pcCacheGet("key" + i);
+      pair.first.cacheGetPeriodic("key" + i);
     }
 
     for (int i = 2; i < 10; ++i) {
       pair.second.setFailure(false);
       pair.second.setCloseFailure(true);
       pair.second.setLoadedValue(i);
-      pair.second.setLoadedValueSize(1);
+      pair.second.setLoadedValueSize(BigInteger.ONE);
 
-      pair.first.pcCacheGet("key" + i);
+      pair.first.cacheGetPeriodic("key" + i);
     }
   }
 
   /**
    * Trying to subscribe with null fails.
    * 
-   * @throws LUCacheException
+   * @throws JCacheException
    */
 
   @Test(expected = ConstraintError.class) public void testEventsNull()
     throws ConstraintError,
-      LUCacheException
+      JCacheException
   {
     final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(2L);
-    pair.first.luCacheEventsSubscribe(null);
+    pair.first.cacheEventsSubscribe(null);
   }
 
   @Test public void testEvictionAge()
     throws ConstraintError,
       Failure,
-      LUCacheException
+      JCacheException
   {
     final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> p =
       this.newCacheWithMaximumAge(2);
 
-    p.first.luCacheEventsSubscribe(new EventLog<String, Integer>());
+    p.first.cacheEventsSubscribe(new EventLog<String, Integer>());
 
-    p.first.pcPeriodStart();
+    p.first.cachePeriodStart();
     for (int index = 0; index < 10; ++index) {
       p.second.setLoadedValue(Integer.valueOf(index));
-      p.second.setLoadedValueSize(1);
-      p.first.pcCacheGet("key" + index);
+      p.second.setLoadedValueSize(BigInteger.ONE);
+      p.first.cacheGetPeriodic("key" + index);
     }
-    p.first.pcPeriodEnd();
-    Assert.assertEquals(10, p.first.luCacheItems());
-    Assert.assertEquals(10, p.first.luCacheSize());
+    p.first.cachePeriodEnd();
+    Assert.assertEquals(BigInteger.valueOf(10), p.first.cacheItemCount());
+    Assert.assertEquals(BigInteger.valueOf(10), p.first.cacheSize());
 
-    p.first.pcPeriodStart();
+    p.first.cachePeriodStart();
     for (int index = 10; index < 20; ++index) {
       p.second.setLoadedValue(Integer.valueOf(index));
-      p.second.setLoadedValueSize(1);
-      p.first.pcCacheGet("key" + index);
+      p.second.setLoadedValueSize(BigInteger.ONE);
+      p.first.cacheGetPeriodic("key" + index);
     }
-    p.first.pcPeriodEnd();
-    Assert.assertEquals(20, p.first.luCacheItems());
-    Assert.assertEquals(20, p.first.luCacheSize());
+    p.first.cachePeriodEnd();
+    Assert.assertEquals(BigInteger.valueOf(20), p.first.cacheItemCount());
+    Assert.assertEquals(BigInteger.valueOf(20), p.first.cacheSize());
 
-    p.first.pcPeriodStart();
-    p.first.pcPeriodEnd();
-    Assert.assertEquals(10, p.first.luCacheItems());
-    Assert.assertEquals(10, p.first.luCacheSize());
+    p.first.cachePeriodStart();
+    p.first.cachePeriodEnd();
+    Assert.assertEquals(BigInteger.valueOf(10), p.first.cacheItemCount());
+    Assert.assertEquals(BigInteger.valueOf(10), p.first.cacheSize());
 
-    p.first.pcPeriodStart();
-    p.first.pcPeriodEnd();
-    Assert.assertEquals(0, p.first.luCacheItems());
-    Assert.assertEquals(0, p.first.luCacheSize());
+    p.first.cachePeriodStart();
+    p.first.cachePeriodEnd();
+    Assert.assertEquals(BigInteger.ZERO, p.first.cacheItemCount());
+    Assert.assertEquals(BigInteger.ZERO, p.first.cacheSize());
   }
 
   @Test public void testEvictionSize()
     throws ConstraintError,
       Failure,
-      LUCacheException
+      JCacheException
   {
     final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> p =
       this.newCacheWithMaximumSize(10);
 
-    p.first.luCacheEventsSubscribe(new EventLog<String, Integer>());
+    p.first.cacheEventsSubscribe(new EventLog<String, Integer>());
 
-    p.first.pcPeriodStart();
+    p.first.cachePeriodStart();
     for (int index = 0; index < 10; ++index) {
       p.second.setLoadedValue(Integer.valueOf(index));
-      p.second.setLoadedValueSize(1);
-      p.first.pcCacheGet("key" + index);
+      p.second.setLoadedValueSize(BigInteger.ONE);
+      p.first.cacheGetPeriodic("key" + index);
     }
-    p.first.pcPeriodEnd();
-    Assert.assertEquals(10, p.first.luCacheItems());
-    Assert.assertEquals(10, p.first.luCacheSize());
+    p.first.cachePeriodEnd();
+    Assert.assertEquals(BigInteger.valueOf(10), p.first.cacheItemCount());
+    Assert.assertEquals(BigInteger.valueOf(10), p.first.cacheSize());
 
-    p.first.pcPeriodStart();
+    p.first.cachePeriodStart();
     for (int index = 10; index < 20; ++index) {
       p.second.setLoadedValue(Integer.valueOf(index));
-      p.second.setLoadedValueSize(1);
-      p.first.pcCacheGet("key" + index);
+      p.second.setLoadedValueSize(BigInteger.ONE);
+      p.first.cacheGetPeriodic("key" + index);
     }
-    p.first.pcPeriodEnd();
+    p.first.cachePeriodEnd();
     for (int index = 0; index < 10; ++index) {
-      Assert.assertFalse(p.first.luCacheIsCached("key" + index));
+      Assert.assertFalse(p.first.cacheIsCached("key" + index));
     }
     for (int index = 10; index < 20; ++index) {
-      Assert.assertTrue(p.first.luCacheIsCached("key" + index));
+      Assert.assertTrue(p.first.cacheIsCached("key" + index));
     }
-    Assert.assertEquals(10, p.first.luCacheItems());
-    Assert.assertEquals(10, p.first.luCacheSize());
+    Assert.assertEquals(BigInteger.valueOf(10), p.first.cacheItemCount());
+    Assert.assertEquals(BigInteger.valueOf(10), p.first.cacheSize());
 
-    p.first.pcPeriodStart();
+    p.first.cachePeriodStart();
     for (int index = 20; index < 30; ++index) {
       p.second.setLoadedValue(Integer.valueOf(index));
-      p.second.setLoadedValueSize(1);
-      p.first.pcCacheGet("key" + index);
+      p.second.setLoadedValueSize(BigInteger.ONE);
+      p.first.cacheGetPeriodic("key" + index);
     }
-    p.first.pcPeriodEnd();
+    p.first.cachePeriodEnd();
     for (int index = 10; index < 20; ++index) {
-      Assert.assertFalse(p.first.luCacheIsCached("key" + index));
+      Assert.assertFalse(p.first.cacheIsCached("key" + index));
     }
     for (int index = 20; index < 30; ++index) {
-      Assert.assertTrue(p.first.luCacheIsCached("key" + index));
+      Assert.assertTrue(p.first.cacheIsCached("key" + index));
     }
-    Assert.assertEquals(10, p.first.luCacheItems());
-    Assert.assertEquals(10, p.first.luCacheSize());
+    Assert.assertEquals(BigInteger.valueOf(10), p.first.cacheItemCount());
+    Assert.assertEquals(BigInteger.valueOf(10), p.first.cacheSize());
   }
 
   @Test(expected = ConstraintError.class) public void testGetNoPeriod()
     throws ConstraintError,
       Failure,
-      LUCacheException
+      JCacheException
   {
     PCache<Integer, Integer, Failure> pc = null;
 
     pc = this.newCache();
     assert pc != null;
-    pc.pcCacheGet(Integer.valueOf(23));
+    pc.cacheGetPeriodic(Integer.valueOf(23));
   }
 
   @Test(expected = ConstraintError.class) public void testGetNull()
     throws ConstraintError,
       Failure,
-      LUCacheException
+      JCacheException
   {
     PCache<Integer, Integer, Failure> pc = null;
 
     pc = this.newCache();
     assert pc != null;
-    pc.pcCacheGet(null);
+    pc.cacheGetPeriodic(null);
   }
 
   /**
@@ -424,7 +420,7 @@ public final class PCacheTrivialTest
     }
 
     assert cache != null;
-    cache.luCacheIsCached(null);
+    cache.cacheIsCached(null);
   }
 
   /**
@@ -434,28 +430,28 @@ public final class PCacheTrivialTest
   @Test(expected = Failure.class) public void testLoadFailure()
     throws Failure,
       ConstraintError,
-      LUCacheException
+      JCacheException
   {
     final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(32L);
 
     pair.second.setFailure(true);
     pair.second.setLoadedValue(Integer.valueOf(23));
-    pair.second.setLoadedValueSize(4);
-    pair.first.pcPeriodStart();
-    pair.first.pcCacheGet("23");
+    pair.second.setLoadedValueSize(BigInteger.valueOf(4));
+    pair.first.cachePeriodStart();
+    pair.first.cacheGetPeriodic("23");
   }
 
   /**
    * A loader returning an object that cannot fit in the cache is an error.
    * 
-   * @throws LUCacheException
+   * @throws JCacheException
    */
 
-  @Test(expected = LUCacheException.class) public void testLoadHugeSize()
+  @Test(expected = JCacheException.class) public void testLoadHugeSize()
     throws Failure,
       ConstraintError,
-      LUCacheException
+      JCacheException
   {
     final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumSize(32L);
@@ -463,10 +459,10 @@ public final class PCacheTrivialTest
     try {
       pair.second.setFailure(false);
       pair.second.setLoadedValue(Integer.valueOf(1));
-      pair.second.setLoadedValueSize(33L);
-      pair.first.pcPeriodStart();
-      pair.first.pcCacheGet("23");
-    } catch (final LUCacheException x) {
+      pair.second.setLoadedValueSize(BigInteger.valueOf(33L));
+      pair.first.cachePeriodStart();
+      pair.first.cacheGetPeriodic("23");
+    } catch (final JCacheException x) {
       Assert.assertEquals(Code.LUCACHE_OBJECT_TOO_LARGE, x.getCode());
       throw x;
     }
@@ -475,13 +471,13 @@ public final class PCacheTrivialTest
   /**
    * A loader returning a negative size is a cache error.
    * 
-   * @throws LUCacheException
+   * @throws JCacheException
    */
 
-  @Test(expected = LUCacheException.class) public void testLoadNegativeSize()
+  @Test(expected = JCacheException.class) public void testLoadNegativeSize()
     throws Failure,
       ConstraintError,
-      LUCacheException
+      JCacheException
   {
     final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(32L);
@@ -489,10 +485,10 @@ public final class PCacheTrivialTest
     try {
       pair.second.setFailure(false);
       pair.second.setLoadedValue(Integer.valueOf(1));
-      pair.second.setLoadedValueSize(-1);
-      pair.first.pcPeriodStart();
-      pair.first.pcCacheGet("23");
-    } catch (final LUCacheException x) {
+      pair.second.setLoadedValueSize(BigInteger.valueOf(-1));
+      pair.first.cachePeriodStart();
+      pair.first.cacheGetPeriodic("23");
+    } catch (final JCacheException x) {
       Assert.assertEquals(Code.LUCACHE_OBJECT_TOO_SMALL, x.getCode());
       throw x;
     }
@@ -501,13 +497,13 @@ public final class PCacheTrivialTest
   /**
    * A loader returning <code>null</code> is a cache error.
    * 
-   * @throws LUCacheException
+   * @throws JCacheException
    */
 
-  @Test(expected = LUCacheException.class) public void testLoadNull()
+  @Test(expected = JCacheException.class) public void testLoadNull()
     throws Failure,
       ConstraintError,
-      LUCacheException
+      JCacheException
   {
     final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(32L);
@@ -515,10 +511,10 @@ public final class PCacheTrivialTest
     try {
       pair.second.setFailure(false);
       pair.second.setLoadedValue(null);
-      pair.second.setLoadedValueSize(4);
-      pair.first.pcPeriodStart();
-      pair.first.pcCacheGet("23");
-    } catch (final LUCacheException x) {
+      pair.second.setLoadedValueSize(BigInteger.valueOf(4));
+      pair.first.cachePeriodStart();
+      pair.first.cacheGetPeriodic("23");
+    } catch (final JCacheException x) {
       Assert.assertEquals(Code.LUCACHE_LOADER_RETURNED_NULL, x.getCode());
       throw x;
     }
@@ -560,13 +556,13 @@ public final class PCacheTrivialTest
 
     try {
       pc = this.newCache();
-      pc.pcPeriodStart();
+      pc.cachePeriodStart();
     } catch (final ConstraintError x) {
       throw new UnreachableCodeException(x);
     }
 
     assert pc != null;
-    pc.pcPeriodStart();
+    pc.cachePeriodStart();
   }
 
   @Test(expected = ConstraintError.class) public void testPeriodNotStarted()
@@ -576,35 +572,35 @@ public final class PCacheTrivialTest
 
     pc = this.newCache();
     assert pc != null;
-    pc.pcPeriodEnd();
+    pc.cachePeriodEnd();
   }
 
   /**
    * Repeatedly requesting a key keeps the key cached.
    * 
-   * @throws LUCacheException
+   * @throws JCacheException
    */
 
   @Test public void testUpdateTime()
     throws Failure,
       ConstraintError,
-      LUCacheException
+      JCacheException
   {
     final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(2);
 
     final EventLog<String, Integer> ev = new EventLog<String, Integer>();
-    pair.first.luCacheEventsSubscribe(ev);
+    pair.first.cacheEventsSubscribe(ev);
 
     for (int index = 0; index < 10; ++index) {
       ev.reset();
-      pair.second.setLoadedValueSize(1);
+      pair.second.setLoadedValueSize(BigInteger.ONE);
       pair.second.setLoadedValue(Integer.valueOf(index));
       pair.second.setFailure(false);
 
-      pair.first.pcPeriodStart();
-      pair.first.pcCacheGet("key0");
-      pair.first.pcPeriodEnd();
+      pair.first.cachePeriodStart();
+      pair.first.cacheGetPeriodic("key0");
+      pair.first.cachePeriodEnd();
       Assert.assertFalse(ev.evicted);
     }
   }

@@ -16,6 +16,8 @@
 
 package com.io7m.jcache;
 
+import java.math.BigInteger;
+
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
@@ -38,21 +40,20 @@ import com.io7m.jaux.Constraints.ConstraintError;
   public static @Nonnull LRUCacheConfig empty()
     throws ConstraintError
   {
-    return new LRUCacheConfig(0L);
+    return new LRUCacheConfig(BigInteger.ZERO);
   }
 
-  private final long max_capacity;
+  private final BigInteger max_capacity;
 
   private LRUCacheConfig(
-    final long in_max_capacity)
+    final BigInteger in_max_capacity)
     throws ConstraintError
   {
-    this.max_capacity =
-      Constraints.constrainRange(
-        in_max_capacity,
-        0,
-        Long.MAX_VALUE,
-        "Maximum capacity is at least 0");
+    Constraints.constrainArbitrary(
+      in_max_capacity.compareTo(BigInteger.ZERO) >= 0,
+      "Maximum capacity is at least 0");
+
+    this.max_capacity = in_max_capacity;
   }
 
   /**
@@ -96,7 +97,7 @@ import com.io7m.jaux.Constraints.ConstraintError;
    * @return The maximum capacity of the cache that will be created.
    */
 
-  public long getMaximumCapacity()
+  public BigInteger getMaximumCapacity()
   {
     return this.max_capacity;
   }
@@ -105,9 +106,7 @@ import com.io7m.jaux.Constraints.ConstraintError;
   {
     final int prime = 31;
     int result = 1;
-    result =
-      (prime * result)
-        + (int) (this.max_capacity ^ (this.max_capacity >>> 32));
+    result = (prime * result) + this.max_capacity.hashCode();
     return result;
   }
 
@@ -134,7 +133,7 @@ import com.io7m.jaux.Constraints.ConstraintError;
   @SuppressWarnings("static-method") public @Nonnull
     LRUCacheConfig
     withMaximumCapacity(
-      final long max)
+      final BigInteger max)
       throws ConstraintError
   {
     return new LRUCacheConfig(max);

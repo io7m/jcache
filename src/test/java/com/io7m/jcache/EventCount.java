@@ -16,7 +16,9 @@
 
 package com.io7m.jcache;
 
-class EventCount<K, V> implements LUCacheEvents<K, V>
+import java.math.BigInteger;
+
+class EventCount<K, V> implements JCacheEvents<K, V>
 {
   public EventCount()
   {
@@ -51,35 +53,35 @@ class EventCount<K, V> implements LUCacheEvents<K, V>
     return this.retrievals;
   }
 
-  @Override public void luCacheEventObjectCloseError(
+  @Override public void cacheEventValueCloseError(
     final K key,
     final V value,
-    final long size,
+    final BigInteger size,
     final Throwable x)
   {
     ++this.close_errors;
   }
 
-  @Override public void luCacheEventObjectEvicted(
+  @Override public void cacheEventValueEvicted(
     final K key,
     final V value,
-    final long size)
+    final BigInteger size)
   {
     ++this.evictions;
   }
 
-  @Override public void luCacheEventObjectLoaded(
+  @Override public void cacheEventValueLoaded(
     final K key,
     final V value,
-    final long size)
+    final BigInteger size)
   {
     ++this.loads;
   }
 
-  @Override public void luCacheEventObjectRetrieved(
+  @Override public void cacheEventValueRetrieved(
     final K key,
     final V value,
-    final long size)
+    final BigInteger size)
   {
     ++this.retrievals;
   }

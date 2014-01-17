@@ -16,6 +16,7 @@
 
 package com.io7m.jcache;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -46,26 +47,26 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
 {
   @Immutable private static final class CachedValue<V>
   {
-    private final long       size;
-    private final long       time;
-    private final @Nonnull V value;
+    private final @Nonnull BigInteger size;
+    private final @Nonnull BigInteger time;
+    private final @Nonnull V          value;
 
     CachedValue(
       final @Nonnull V in_value,
-      final long in_time,
-      final long in_size)
+      final @Nonnull BigInteger in_time,
+      final @Nonnull BigInteger in_size)
     {
       this.value = in_value;
       this.time = in_time;
       this.size = in_size;
     }
 
-    public long getSize()
+    public BigInteger getSize()
     {
       return this.size;
     }
 
-    public long getTime()
+    public @Nonnull BigInteger getTime()
     {
       return this.time;
     }
@@ -99,57 +100,79 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
     <K, V, E extends Throwable>
     LRUCacheTrivial<K, V, E>
     newCache(
-      final @Nonnull LUCacheLoader<K, V, E> loader,
+      final @Nonnull JCacheLoader<K, V, E> loader,
       final @Nonnull LRUCacheConfig config)
       throws ConstraintError
   {
     return new LRUCacheTrivial<K, V, E>(loader, config);
   }
 
-  private final @Nonnull LRUCacheConfig         config;
-  private @CheckForNull LUCacheEvents<K, V>     events;
-  private long                                  gets;
-  private final @Nonnull Map<K, CachedValue<V>> items;
-  private final @Nonnull LUCacheLoader<K, V, E> loader;
-  private final @Nonnull NavigableMap<Long, K>  time_items;
-  private long                                  used;
+  private final @Nonnull LRUCacheConfig              config;
+  private @CheckForNull JCacheEvents<K, V>           events;
+  private @Nonnull BigInteger                        gets;
+  private final @Nonnull Map<K, CachedValue<V>>      items;
+  private final @Nonnull JCacheLoader<K, V, E>       loader;
+  private final @Nonnull NavigableMap<BigInteger, K> time_items;
+  private @Nonnull BigInteger                        used;
 
   private LRUCacheTrivial(
-    final @Nonnull LUCacheLoader<K, V, E> in_loader,
+    final @Nonnull JCacheLoader<K, V, E> in_loader,
     final @Nonnull LRUCacheConfig in_config)
     throws ConstraintError
   {
     this.loader = Constraints.constrainNotNull(in_loader, "Loader");
     this.config = Constraints.constrainNotNull(in_config, "Configuration");
     this.items = new HashMap<K, CachedValue<V>>();
-    this.time_items = new TreeMap<Long, K>();
-    this.used = 0;
-    this.gets = 0;
+    this.time_items = new TreeMap<BigInteger, K>();
+    this.used = BigInteger.ZERO;
+    this.gets = BigInteger.ZERO;
     this.events = null;
   }
 
   private @Nonnull CachedValue<V> cacheAdd(
     final @Nonnull K key,
     final @Nonnull V new_value,
-    final long size)
+    final @Nonnull BigInteger size)
   {
-    this.used += size;
+    this.used = this.used.add(size);
     return this.cachePut(key, new_value, size);
+  }
+
+  @Override public void cacheDelete()
+  {
+    while (this.items.size() > 0) {
+      this.cacheEvictOldest();
+    }
+
+    assert this.time_items.size() == 0;
+    assert this.items.size() == 0;
+  }
+
+  @Override public void cacheEventsSubscribe(
+    final @Nonnull JCacheEvents<K, V> e)
+    throws ConstraintError
+  {
+    this.events = Constraints.constrainNotNull(e, "Events");
+  }
+
+  @Override public void cacheEventsUnsubscribe()
+  {
+    this.events = null;
   }
 
   private void cacheEvictOldest()
   {
-    final Entry<Long, K> eleast = this.time_items.firstEntry();
+    final Entry<BigInteger, K> eleast = this.time_items.firstEntry();
     assert eleast != null;
     final CachedValue<V> old_cached = this.items.get(eleast.getValue());
     this.cacheRemove(eleast.getValue(), old_cached);
   }
 
   private void cacheEvictOldestItems(
-    final long added_size,
-    final long maximum)
+    final @Nonnull BigInteger added_size,
+    final @Nonnull BigInteger maximum)
   {
-    assert added_size <= maximum;
+    assert added_size.compareTo(maximum) <= 0;
 
     /**
      * Because objects larger than the capacity cannot be inserted into the
@@ -157,40 +180,55 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
      */
 
     for (;;) {
-      if ((this.used + added_size) <= maximum) {
+      final BigInteger current = this.used.add(added_size);
+      if (current.compareTo(maximum) <= 0) {
         break;
       }
       this.cacheEvictOldest();
     }
 
-    assert (this.used + added_size) <= maximum;
+    final BigInteger current = this.used.add(added_size);
+    assert current.compareTo(maximum) <= 0;
+  }
+
+  private @Nonnull CachedValue<V> cacheGetActual(
+    final @Nonnull K key)
+    throws ConstraintError,
+      E,
+      JCacheException
+  {
+    if (this.cacheIsCached(key)) {
+      return this.cacheGetReplace(key);
+    }
+
+    return this.cacheGetAddingNew(key);
   }
 
   private @Nonnull CachedValue<V> cacheGetAddingNew(
     final @Nonnull K key)
     throws E,
-      LUCacheException,
+      JCacheException,
       ConstraintError
   {
     boolean failed = true;
     V new_value = null;
 
     try {
-      new_value = this.loader.luCacheLoadFrom(key);
+      new_value = this.loader.cacheValueLoad(key);
       if (new_value == null) {
-        throw LUCacheException.errorLoaderReturnedNull(key);
+        throw JCacheException.errorLoaderReturnedNull(key);
       }
 
-      final long size = this.loader.luCacheSizeOf(new_value);
+      final BigInteger size = this.loader.cacheValueSizeOf(new_value);
       this.eventObjectLoaded(key, new_value, size);
 
-      if (size < 1) {
-        throw LUCacheException.errorObjectTooSmall(key, size);
+      if (size.compareTo(BigInteger.ONE) < 0) {
+        throw JCacheException.errorObjectTooSmall(key, size);
       }
 
-      final long maximum = this.config.getMaximumCapacity();
-      if (size > maximum) {
-        throw LUCacheException.errorObjectTooLarge(key, size, maximum);
+      final BigInteger maximum = this.config.getMaximumCapacity();
+      if (size.compareTo(maximum) > 0) {
+        throw JCacheException.errorObjectTooLarge(key, size, maximum);
       }
 
       this.cacheEvictOldestItems(size, maximum);
@@ -200,29 +238,60 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
     } finally {
       if (failed) {
         if (new_value != null) {
-          this.loader.luCacheClose(new_value);
+          this.loader.cacheValueClose(new_value);
         }
       }
     }
+  }
+
+  @Override public @Nonnull V cacheGetLU(
+    final @Nonnull K key)
+    throws ConstraintError,
+      E,
+      JCacheException
+  {
+    Constraints.constrainNotNull(key, "Key");
+
+    final CachedValue<V> cv = this.cacheGetActual(key);
+    this.eventObjectRetrieved(key, cv);
+    return cv.getValue();
   }
 
   private @Nonnull CachedValue<V> cacheGetReplace(
     final @Nonnull K key)
   {
     final CachedValue<V> v = this.items.get(key);
-    this.time_items.remove(Long.valueOf(v.getTime()));
+    this.time_items.remove(v.getTime());
     return this.cachePut(key, v.getValue(), v.getSize());
+  }
+
+  private void cacheIncrementGets()
+  {
+    this.gets = this.gets.add(BigInteger.ONE);
+  }
+
+  @Override public boolean cacheIsCached(
+    final @Nonnull K key)
+    throws ConstraintError
+  {
+    Constraints.constrainNotNull(key, "Key");
+    return this.items.containsKey(key);
+  }
+
+  @Override public @Nonnull BigInteger cacheItemCount()
+  {
+    return BigInteger.valueOf(this.items.size());
   }
 
   private @Nonnull CachedValue<V> cachePut(
     final @Nonnull K key,
     final @Nonnull V new_value,
-    final long size)
+    final @Nonnull BigInteger size)
   {
-    this.gets += 1;
+    this.cacheIncrementGets();
     final CachedValue<V> cv = new CachedValue<V>(new_value, this.gets, size);
     this.items.put(key, cv);
-    this.time_items.put(Long.valueOf(this.gets), key);
+    this.time_items.put(this.gets, key);
     return cv;
   }
 
@@ -232,13 +301,18 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
   {
     this.eventObjectEvicted(key, existing);
     try {
-      this.loader.luCacheClose(existing.getValue());
+      this.loader.cacheValueClose(existing.getValue());
     } catch (final Throwable x) {
       this.eventObjectCloseError(key, existing, x);
     }
-    this.time_items.remove(Long.valueOf(existing.getTime()));
+    this.time_items.remove(existing.getTime());
     this.items.remove(key);
-    this.used -= existing.getSize();
+    this.used = this.used.subtract(existing.getSize());
+  }
+
+  @Override public BigInteger cacheSize()
+  {
+    return this.used;
   }
 
   private void eventObjectCloseError(
@@ -248,7 +322,7 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
   {
     if (this.events != null) {
       try {
-        this.events.luCacheEventObjectCloseError(
+        this.events.cacheEventValueCloseError(
           key,
           existing.getValue(),
           existing.getSize(),
@@ -260,12 +334,12 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
   }
 
   private void eventObjectEvicted(
-    final K key,
-    final CachedValue<V> existing)
+    final @Nonnull K key,
+    final @Nonnull CachedValue<V> existing)
   {
     if (this.events != null) {
       try {
-        this.events.luCacheEventObjectEvicted(
+        this.events.cacheEventValueEvicted(
           key,
           existing.getValue(),
           existing.getSize());
@@ -276,13 +350,13 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
   }
 
   private void eventObjectLoaded(
-    final K key,
-    final V new_value,
-    final long size)
+    final @Nonnull K key,
+    final @Nonnull V new_value,
+    final @Nonnull BigInteger size)
   {
     if (this.events != null) {
       try {
-        this.events.luCacheEventObjectLoaded(key, new_value, size);
+        this.events.cacheEventValueLoaded(key, new_value, size);
       } catch (final Throwable _) {
         // Ignore
       }
@@ -295,10 +369,8 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
   {
     if (this.events != null) {
       try {
-        this.events.luCacheEventObjectRetrieved(
-          key,
-          cv.getValue(),
-          cv.getSize());
+        this.events
+          .cacheEventValueRetrieved(key, cv.getValue(), cv.getSize());
       } catch (final Throwable _) {
         // Ignore
       }
@@ -310,81 +382,13 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
     return this.config;
   }
 
-  @Override public void luCacheDelete()
-  {
-    while (this.items.size() > 0) {
-      this.cacheEvictOldest();
-    }
-
-    assert this.time_items.size() == 0;
-    assert this.items.size() == 0;
-  }
-
-  @Override public void luCacheEventsSubscribe(
-    final @Nonnull LUCacheEvents<K, V> e)
-    throws ConstraintError
-  {
-    this.events = Constraints.constrainNotNull(e, "Events");
-  }
-
-  @Override public void luCacheEventsUnsubscribe()
-  {
-    this.events = null;
-  }
-
-  @Override public @Nonnull V luCacheGet(
-    final @Nonnull K key)
-    throws ConstraintError,
-      E,
-      LUCacheException
-  {
-    Constraints.constrainNotNull(key, "Key");
-
-    final CachedValue<V> cv = this.luCacheGetActual(key);
-    this.eventObjectRetrieved(key, cv);
-    return cv.getValue();
-  }
-
-  private @Nonnull CachedValue<V> luCacheGetActual(
-    final @Nonnull K key)
-    throws ConstraintError,
-      E,
-      LUCacheException
-  {
-    if (this.luCacheIsCached(key)) {
-      return this.cacheGetReplace(key);
-    }
-
-    return this.cacheGetAddingNew(key);
-  }
-
-  @Override public boolean luCacheIsCached(
-    final @Nonnull K key)
-    throws ConstraintError
-  {
-    Constraints.constrainNotNull(key, "Key");
-    return this.items.containsKey(key);
-  }
-
-  @Override public long luCacheItems()
-  {
-    return this.items.size();
-  }
-
-  @Override public long luCacheSize()
-  {
-    return this.used;
-  }
-
   @Override public String toString()
   {
     final StringBuilder builder = new StringBuilder();
     builder.append("[LRUCacheTrivial ");
-
     builder.append("[size ");
     builder.append(this.used);
     builder.append("]");
-
     builder.append("]");
     return builder.toString();
   }

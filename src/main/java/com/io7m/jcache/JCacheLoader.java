@@ -16,6 +16,8 @@
 
 package com.io7m.jcache;
 
+import java.math.BigInteger;
+
 import javax.annotation.Nonnull;
 
 /**
@@ -30,7 +32,7 @@ import javax.annotation.Nonnull;
  *          The type of exceptions raised during loading
  */
 
-public interface LUCacheLoader<K, V, E extends Throwable>
+public interface JCacheLoader<K, V, E extends Throwable>
 {
   /**
    * Destroy <code>v</code>, freeing any associated resources.
@@ -41,7 +43,7 @@ public interface LUCacheLoader<K, V, E extends Throwable>
    *           Iff an exception is raised during deletion
    */
 
-  public void luCacheClose(
+  public void cacheValueClose(
     final @Nonnull V v)
     throws E;
 
@@ -56,7 +58,7 @@ public interface LUCacheLoader<K, V, E extends Throwable>
    *           Iff loading fails
    */
 
-  public @Nonnull V luCacheLoadFrom(
+  public @Nonnull V cacheValueLoad(
     final @Nonnull K key)
     throws E;
 
@@ -66,6 +68,6 @@ public interface LUCacheLoader<K, V, E extends Throwable>
    *          The loaded object
    */
 
-  public long luCacheSizeOf(
+  public @Nonnull BigInteger cacheValueSizeOf(
     final @Nonnull V v);
 }

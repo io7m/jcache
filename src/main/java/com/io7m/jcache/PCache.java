@@ -29,7 +29,7 @@ import com.io7m.jaux.Constraints.ConstraintError;
  * <p>
  * A periodic cache will evict objects (according to implementation-specific
  * thresholds) at the end of a <i>period</i> delimited with
- * {@link #pcPeriodStart()} and {@link #pcPeriodEnd()}. The intention is to
+ * {@link #cachePeriodStart()} and {@link #cachePeriodEnd()}. The intention is to
  * guarantee that all objects requested during a given period will stay in the
  * cache for the entirety of that period, regardless of how large the cache
  * would grow during that time. Typically, objects that have not been accessed
@@ -46,21 +46,21 @@ import com.io7m.jaux.Constraints.ConstraintError;
  */
 
 public interface PCache<K, V, E extends Throwable> extends
-  LUCacheReadable<K>,
-  LUCacheDeletable,
-  LUCacheEventsSubscription<K, V>
+  JCacheReadable<K>,
+  JCacheDeletable,
+  JCacheEventsSubscription<K, V>
 {
   /**
    * Retrieve an object named <code>key</code>, loading it if necessary.
    * 
    * @throws ConstraintError
-   *           Iff <code>key == null</code>, {@link #pcPeriodStart()} has not
-   *           been called since the last call to {@link #pcPeriodEnd()} (or
+   *           Iff <code>key == null</code>, {@link #cachePeriodStart()} has not
+   *           been called since the last call to {@link #cachePeriodEnd()} (or
    *           ever), or an internal constraint error occurs.
    * @throws E
    *           Iff the object named <code>key</code> raises an exception of
    *           type <code>E</code> upon loading.
-   * @throws LUCacheException
+   * @throws JCacheException
    *           Iff the object cannot be cached (possibly due to being too
    *           large, or violating other constraints of the particular cache
    *           implementation).
@@ -69,21 +69,21 @@ public interface PCache<K, V, E extends Throwable> extends
    * @return The cached object
    */
 
-  public @Nonnull V pcCacheGet(
+  public @Nonnull V cacheGetPeriodic(
     final @Nonnull K key)
     throws ConstraintError,
       E,
-      LUCacheException;
+      JCacheException;
 
   /**
    * End the current cache period.
    * 
    * @throws ConstraintError
    *           If a period is not in progress.
-   * @see #pcPeriodStart()
+   * @see #cachePeriodStart()
    */
 
-  public void pcPeriodEnd()
+  public void cachePeriodEnd()
     throws ConstraintError;
 
   /**
@@ -91,9 +91,9 @@ public interface PCache<K, V, E extends Throwable> extends
    * 
    * @throws ConstraintError
    *           If a period is already in progress.
-   * @see #pcPeriodEnd()
+   * @see #cachePeriodEnd()
    */
 
-  public void pcPeriodStart()
+  public void cachePeriodStart()
     throws ConstraintError;
 }

@@ -16,6 +16,8 @@
 
 package com.io7m.jcache;
 
+import java.math.BigInteger;
+
 import javax.annotation.Nonnull;
 
 /**
@@ -27,12 +29,12 @@ import javax.annotation.Nonnull;
  *          The type of cached values
  */
 
-public interface LUCacheEvents<K, V>
+public interface JCacheEvents<K, V>
 {
   /**
    * <p>
-   * Called when an object <code>value</code>, associated with
-   * <code>key</code>, failed to close due to exception <code>x</code>.
+   * Called when a value <code>value</code>, associated with <code>key</code>,
+   * failed to close due to exception <code>x</code>.
    * </p>
    * 
    * @param key
@@ -45,15 +47,15 @@ public interface LUCacheEvents<K, V>
    *          The exception raised
    */
 
-  public void luCacheEventObjectCloseError(
+  public void cacheEventValueCloseError(
     final @Nonnull K key,
     final @Nonnull V value,
-    final long size,
+    final @Nonnull BigInteger size,
     final @Nonnull Throwable x);
 
   /**
    * <p>
-   * Called when an object <code>value</code> is associated with
+   * Called when a value <code>value</code> is associated with
    * <code>key</code> is about to be evicted.
    * </p>
    * 
@@ -65,14 +67,14 @@ public interface LUCacheEvents<K, V>
    *          The size of <tt>value</tt>
    */
 
-  public void luCacheEventObjectEvicted(
+  public void cacheEventValueEvicted(
     final @Nonnull K key,
     final @Nonnull V value,
-    final long size);
+    final @Nonnull BigInteger size);
 
   /**
    * <p>
-   * Called when an object <code>value</code> is first loaded, prior to any
+   * Called when a value <code>value</code> is first loaded, prior to any
    * cache size checks.
    * </p>
    * 
@@ -84,15 +86,14 @@ public interface LUCacheEvents<K, V>
    *          The size of <tt>value</tt>
    */
 
-  public void luCacheEventObjectLoaded(
+  public void cacheEventValueLoaded(
     final @Nonnull K key,
     final @Nonnull V value,
-    final long size);
+    final @Nonnull BigInteger size);
 
   /**
    * <p>
-   * Called when an object <code>value</code> is retrieved via
-   * <code>key</code>.
+   * Called when a value <code>value</code> is retrieved via <code>key</code>.
    * </p>
    * 
    * @param key
@@ -103,8 +104,8 @@ public interface LUCacheEvents<K, V>
    *          The size of <tt>value</tt>
    */
 
-  public void luCacheEventObjectRetrieved(
+  public void cacheEventValueRetrieved(
     final @Nonnull K key,
     final @Nonnull V value,
-    final long size);
+    final @Nonnull BigInteger size);
 }

@@ -16,38 +16,40 @@
 
 package com.io7m.jcache;
 
-class EventLog<K, V> implements LUCacheEvents<K, V>
+import java.math.BigInteger;
+
+class EventLog<K, V> implements JCacheEvents<K, V>
 {
   public EventLog()
   {
     // Nothing
   }
 
-  public boolean   close_error           = false;
-  public Throwable close_error_exception = null;
-  public K         close_error_key       = null;
-  public long      close_error_size      = 0L;
+  public boolean    close_error           = false;
+  public Throwable  close_error_exception = null;
+  public K          close_error_key       = null;
+  public BigInteger close_error_size      = BigInteger.ZERO;
 
-  public V         close_error_value     = null;
-  public boolean   evicted               = false;
-  public K         evicted_key           = null;
-  public long      evicted_size          = 0L;
+  public V          close_error_value     = null;
+  public boolean    evicted               = false;
+  public K          evicted_key           = null;
+  public BigInteger evicted_size          = BigInteger.ZERO;
 
-  public V         evicted_value         = null;
-  public boolean   loaded                = false;
-  public K         loaded_key            = null;
-  public long      loaded_size           = 0L;
+  public V          evicted_value         = null;
+  public boolean    loaded                = false;
+  public K          loaded_key            = null;
+  public BigInteger loaded_size           = BigInteger.ZERO;
 
-  public V         loaded_value          = null;
-  public boolean   retrieved             = false;
-  public K         retrieved_key         = null;
-  public long      retrieved_size        = 0L;
-  public V         retrieved_value       = null;
+  public V          loaded_value          = null;
+  public boolean    retrieved             = false;
+  public K          retrieved_key         = null;
+  public BigInteger retrieved_size        = BigInteger.ZERO;
+  public V          retrieved_value       = null;
 
-  @Override public void luCacheEventObjectCloseError(
+  @Override public void cacheEventValueCloseError(
     final K key,
     final V value,
-    final long size,
+    final BigInteger size,
     final Throwable x)
   {
     System.out.println("close error: "
@@ -66,10 +68,10 @@ class EventLog<K, V> implements LUCacheEvents<K, V>
     this.close_error_exception = x;
   }
 
-  @Override public void luCacheEventObjectEvicted(
+  @Override public void cacheEventValueEvicted(
     final K key,
     final V value,
-    final long size)
+    final BigInteger size)
   {
     System.out.println("evicted: " + key + ":" + value + ":" + size);
 
@@ -79,10 +81,10 @@ class EventLog<K, V> implements LUCacheEvents<K, V>
     this.evicted_size = size;
   }
 
-  @Override public void luCacheEventObjectLoaded(
+  @Override public void cacheEventValueLoaded(
     final K key,
     final V value,
-    final long size)
+    final BigInteger size)
   {
     System.out.println("loaded: " + key + ":" + value + ":" + size);
 
@@ -92,10 +94,10 @@ class EventLog<K, V> implements LUCacheEvents<K, V>
     this.loaded_size = size;
   }
 
-  @Override public void luCacheEventObjectRetrieved(
+  @Override public void cacheEventValueRetrieved(
     final K key,
     final V value,
-    final long size)
+    final BigInteger size)
   {
     System.out.println("retrieved: " + key + ":" + value + ":" + size);
 

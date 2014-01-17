@@ -16,6 +16,8 @@
 
 package com.io7m.jcache;
 
+import java.math.BigInteger;
+
 import javax.annotation.Nonnull;
 
 import com.io7m.jaux.Constraints;
@@ -25,7 +27,7 @@ import com.io7m.jaux.Constraints.ConstraintError;
  * The main exception type raised by cache operations.
  */
 
-public final class LUCacheException extends Throwable
+public final class JCacheException extends Throwable
 {
   /**
    * The possible error codes raised by cache operations.
@@ -70,7 +72,7 @@ public final class LUCacheException extends Throwable
    *           Iff an internal constraint error occurs.
    */
 
-  static @Nonnull <K> LUCacheException errorLoaderReturnedNull(
+  static @Nonnull <K> JCacheException errorLoaderReturnedNull(
     final @Nonnull K key)
     throws ConstraintError
   {
@@ -78,7 +80,7 @@ public final class LUCacheException extends Throwable
     m.append("Loader returned null for '");
     m.append(key);
     m.append("'");
-    return new LUCacheException(
+    return new JCacheException(
       Code.LUCACHE_LOADER_RETURNED_NULL,
       m.toString());
   }
@@ -98,10 +100,10 @@ public final class LUCacheException extends Throwable
    *           Iff an internal constraint error occurs.
    */
 
-  static @Nonnull <K> LUCacheException errorObjectTooLarge(
+  static @Nonnull <K> JCacheException errorObjectTooLarge(
     final @Nonnull K key,
-    final long size,
-    final long maximum)
+    final @Nonnull BigInteger size,
+    final @Nonnull BigInteger maximum)
     throws ConstraintError
   {
     final StringBuilder m = new StringBuilder();
@@ -111,7 +113,7 @@ public final class LUCacheException extends Throwable
     m.append(size);
     m.append(", which is too large for a cache with maximum capacity of ");
     m.append(maximum);
-    return new LUCacheException(Code.LUCACHE_OBJECT_TOO_LARGE, m.toString());
+    return new JCacheException(Code.LUCACHE_OBJECT_TOO_LARGE, m.toString());
   }
 
   /**
@@ -128,9 +130,9 @@ public final class LUCacheException extends Throwable
    *           Iff an internal constraint error occurs.
    */
 
-  static @Nonnull <K> LUCacheException errorObjectTooSmall(
+  static @Nonnull <K> JCacheException errorObjectTooSmall(
     final @Nonnull K key,
-    final long size)
+    final @Nonnull BigInteger size)
     throws ConstraintError
   {
     final StringBuilder m = new StringBuilder();
@@ -139,12 +141,12 @@ public final class LUCacheException extends Throwable
     m.append("' is of size ");
     m.append(size);
     m.append(", which is too small: must be at least 1");
-    return new LUCacheException(Code.LUCACHE_OBJECT_TOO_SMALL, m.toString());
+    return new JCacheException(Code.LUCACHE_OBJECT_TOO_SMALL, m.toString());
   }
 
   private final @Nonnull Code code;
 
-  LUCacheException(
+  JCacheException(
     final @Nonnull Code in_code,
     final @Nonnull String in_message)
     throws ConstraintError

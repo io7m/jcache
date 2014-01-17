@@ -16,6 +16,8 @@
 
 package com.io7m.jcache;
 
+import java.math.BigInteger;
+
 import javax.annotation.Nonnull;
 
 import net.java.quickcheck.QuickCheck;
@@ -26,7 +28,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.io7m.jaux.Constraints.ConstraintError;
-import com.io7m.jcache.PCacheConfig;
 import com.io7m.jcache.PCacheConfig.Builder;
 
 public final class PCacheConfigTest
@@ -40,16 +41,19 @@ public final class PCacheConfigTest
           final @Nonnull Long x)
           throws Throwable
         {
-          final Long y = Long.valueOf(x.longValue() + 1);
+          final BigInteger xi = BigInteger.valueOf(x.longValue());
+          final BigInteger xii = xi.add(BigInteger.ONE);
+
+          final Long y = Long.valueOf(xii.longValue());
           final Builder b = PCacheConfig.newBuilder();
-          b.setMaximumAge(x.longValue());
-          b.setMaximumSize(x.longValue() + 1);
-          Assert.assertEquals(x, Long.valueOf(b.getMaximumAge()));
-          Assert.assertEquals(y, Long.valueOf(b.getMaximumSize()));
+          b.setMaximumAge(xi);
+          b.setMaximumSize(xii);
+          Assert.assertEquals(xi, b.getMaximumAge());
+          Assert.assertEquals(xii, b.getMaximumSize());
           final PCacheConfig c = b.create();
           final PCacheConfig d = b.create();
-          Assert.assertEquals(x, Long.valueOf(c.getMaximumAge()));
-          Assert.assertEquals(y, Long.valueOf(c.getMaximumSize()));
+          Assert.assertEquals(xi, c.getMaximumAge());
+          Assert.assertEquals(xii, c.getMaximumSize());
           Assert.assertEquals(c, c);
           Assert.assertEquals(c, d);
           Assert.assertEquals(d, c);
@@ -58,11 +62,11 @@ public final class PCacheConfigTest
           Assert.assertFalse(c.equals(null));
           Assert.assertFalse(c.equals(Integer.valueOf(23)));
 
-          final Long z = Long.valueOf(y.longValue() + 1);
-          final Long w = Long.valueOf(z.longValue() + 1);
-          b.setMaximumAge(z.longValue());
+          final BigInteger z = BigInteger.valueOf(y.longValue() + 1);
+          final BigInteger w = BigInteger.valueOf(z.longValue() + 1);
+          b.setMaximumAge(z);
           final PCacheConfig e = b.create();
-          b.setMaximumSize(w.longValue());
+          b.setMaximumSize(w);
           final PCacheConfig f = b.create();
 
           Assert.assertFalse(c.equals(e));

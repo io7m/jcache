@@ -16,40 +16,47 @@
 
 package com.io7m.jcache;
 
+import java.math.BigInteger;
+
 import javax.annotation.Nonnull;
 
 import com.io7m.jaux.Constraints.ConstraintError;
 
 /**
- * Interface for subscribing to cache events.
+ * The type of readable least-used caches, containing objects associated with
+ * keys of type <code>K</code>.
  * 
  * @param <K>
  *          The type of keys
- * @param <V>
- *          The type of values
  */
 
-public interface LUCacheEventsSubscription<K, V>
+public interface JCacheReadable<K>
 {
   /**
-   * Subscribe to events for the current cache, replacing any existing
-   * subscriptions (if any). The cache will call functions in the given
-   * interface when events occur.
+   * Return <code>true</code> if an object is cached for <code>key</code>.
    * 
-   * @param events
-   *          The event receiver.
+   * @param key
+   *          The key to query.
+   * @return <code>true</code> if an object is cached for <code>key</code>.
    * @throws ConstraintError
-   *           Iff <code>events == null</code>.
+   *           Iff <code>key == null</code>, or an internal constraint error
+   *           occurs.
    */
 
-  public void luCacheEventsSubscribe(
-    final @Nonnull LUCacheEvents<K, V> events)
+  public boolean cacheIsCached(
+    final @Nonnull K key)
     throws ConstraintError;
 
   /**
-   * Stop receiving events for the current cache.
+   * @return The number of items cached.
    */
 
-  public void luCacheEventsUnsubscribe();
+  public @Nonnull BigInteger cacheItemCount();
+
+  /**
+   * @return The size of the current cache, in units.
+   */
+
+  public @Nonnull BigInteger cacheSize();
 
 }

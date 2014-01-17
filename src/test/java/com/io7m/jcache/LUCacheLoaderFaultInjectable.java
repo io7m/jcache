@@ -16,17 +16,17 @@
 
 package com.io7m.jcache;
 
+import java.math.BigInteger;
+
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-
-import com.io7m.jcache.LUCacheLoader;
 
 /**
  * Loader that fails to load on demand.
  */
 
 public final class LUCacheLoaderFaultInjectable<K, V> implements
-  LUCacheLoader<K, V, LUCacheLoaderFaultInjectable.Failure>
+  JCacheLoader<K, V, LUCacheLoaderFaultInjectable.Failure>
 {
   static class Failure extends Exception
   {
@@ -39,10 +39,10 @@ public final class LUCacheLoaderFaultInjectable<K, V> implements
 
   private boolean         close_fail;
   private boolean         fail;
-  private long            size = 0L;
+  private BigInteger      size = BigInteger.ZERO;
   private @CheckForNull V value;
 
-  @Override public void luCacheClose(
+  @Override public void cacheValueClose(
     final V v)
     throws Failure
   {
@@ -51,7 +51,7 @@ public final class LUCacheLoaderFaultInjectable<K, V> implements
     }
   }
 
-  @Override public V luCacheLoadFrom(
+  @Override public V cacheValueLoad(
     final @Nonnull K key)
     throws Failure
   {
@@ -61,7 +61,7 @@ public final class LUCacheLoaderFaultInjectable<K, V> implements
     return this.value;
   }
 
-  @Override public long luCacheSizeOf(
+  @Override public BigInteger cacheValueSizeOf(
     final @Nonnull V v)
   {
     return this.size;
@@ -86,7 +86,7 @@ public final class LUCacheLoaderFaultInjectable<K, V> implements
   }
 
   public void setLoadedValueSize(
-    final long size)
+    final BigInteger size)
   {
     this.size = size;
   }
