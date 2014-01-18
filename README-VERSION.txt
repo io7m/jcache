@@ -1,1 +1,1 @@
-io7m-jcache 0.2.1
+io7m-jcache 0.3.0
