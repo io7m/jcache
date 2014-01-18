@@ -1,5 +1,5 @@
 /*
- * Copyright © 2013 <code@io7m.com> http://io7m.com
+ * Copyright © 2014 <code@io7m.com> http://io7m.com
  * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -24,7 +24,9 @@ import org.junit.Test;
 import com.io7m.jaux.Constraints.ConstraintError;
 import com.io7m.jaux.UnreachableCodeException;
 import com.io7m.jaux.functional.Pair;
-import com.io7m.jcache.JCacheException.Code;
+import com.io7m.jcache.JCacheException.JCacheExceptionLoaderReturnedNull;
+import com.io7m.jcache.JCacheException.JCacheExceptionObjectTooLarge;
+import com.io7m.jcache.JCacheException.JCacheExceptionObjectTooSmall;
 import com.io7m.jcache.LUCacheLoaderFaultInjectable.Failure;
 import com.io7m.jcache.PCacheConfig.Builder;
 
@@ -448,24 +450,21 @@ public final class PCacheTrivialTest
    * @throws JCacheException
    */
 
-  @Test(expected = JCacheException.class) public void testLoadHugeSize()
-    throws Failure,
-      ConstraintError,
-      JCacheException
+  @Test(expected = JCacheExceptionObjectTooLarge.class) public
+    void
+    testLoadHugeSize()
+      throws Failure,
+        ConstraintError,
+        JCacheException
   {
     final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumSize(32L);
 
-    try {
-      pair.second.setFailure(false);
-      pair.second.setLoadedValue(Integer.valueOf(1));
-      pair.second.setLoadedValueSize(BigInteger.valueOf(33L));
-      pair.first.cachePeriodStart();
-      pair.first.cacheGetPeriodic("23");
-    } catch (final JCacheException x) {
-      Assert.assertEquals(Code.LUCACHE_OBJECT_TOO_LARGE, x.getCode());
-      throw x;
-    }
+    pair.second.setFailure(false);
+    pair.second.setLoadedValue(Integer.valueOf(1));
+    pair.second.setLoadedValueSize(BigInteger.valueOf(33L));
+    pair.first.cachePeriodStart();
+    pair.first.cacheGetPeriodic("23");
   }
 
   /**
@@ -474,24 +473,21 @@ public final class PCacheTrivialTest
    * @throws JCacheException
    */
 
-  @Test(expected = JCacheException.class) public void testLoadNegativeSize()
-    throws Failure,
-      ConstraintError,
-      JCacheException
+  @Test(expected = JCacheExceptionObjectTooSmall.class) public
+    void
+    testLoadNegativeSize()
+      throws Failure,
+        ConstraintError,
+        JCacheException
   {
     final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(32L);
 
-    try {
-      pair.second.setFailure(false);
-      pair.second.setLoadedValue(Integer.valueOf(1));
-      pair.second.setLoadedValueSize(BigInteger.valueOf(-1));
-      pair.first.cachePeriodStart();
-      pair.first.cacheGetPeriodic("23");
-    } catch (final JCacheException x) {
-      Assert.assertEquals(Code.LUCACHE_OBJECT_TOO_SMALL, x.getCode());
-      throw x;
-    }
+    pair.second.setFailure(false);
+    pair.second.setLoadedValue(Integer.valueOf(1));
+    pair.second.setLoadedValueSize(BigInteger.valueOf(-1));
+    pair.first.cachePeriodStart();
+    pair.first.cacheGetPeriodic("23");
   }
 
   /**
@@ -500,24 +496,21 @@ public final class PCacheTrivialTest
    * @throws JCacheException
    */
 
-  @Test(expected = JCacheException.class) public void testLoadNull()
-    throws Failure,
-      ConstraintError,
-      JCacheException
+  @Test(expected = JCacheExceptionLoaderReturnedNull.class) public
+    void
+    testLoadNull()
+      throws Failure,
+        ConstraintError,
+        JCacheException
   {
     final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(32L);
 
-    try {
-      pair.second.setFailure(false);
-      pair.second.setLoadedValue(null);
-      pair.second.setLoadedValueSize(BigInteger.valueOf(4));
-      pair.first.cachePeriodStart();
-      pair.first.cacheGetPeriodic("23");
-    } catch (final JCacheException x) {
-      Assert.assertEquals(Code.LUCACHE_LOADER_RETURNED_NULL, x.getCode());
-      throw x;
-    }
+    pair.second.setFailure(false);
+    pair.second.setLoadedValue(null);
+    pair.second.setLoadedValueSize(BigInteger.valueOf(4));
+    pair.first.cachePeriodStart();
+    pair.first.cacheGetPeriodic("23");
   }
 
   @SuppressWarnings("static-method") @Test(expected = ConstraintError.class) public

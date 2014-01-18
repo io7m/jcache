@@ -20,46 +20,94 @@ import java.math.BigInteger;
 
 import javax.annotation.Nonnull;
 
-import com.io7m.jaux.Constraints;
 import com.io7m.jaux.Constraints.ConstraintError;
 
 /**
  * The main exception type raised by cache operations.
  */
 
-public final class JCacheException extends Throwable
+public abstract class JCacheException extends Throwable
 {
   /**
-   * The possible error codes raised by cache operations.
+   * The loader for the cache returned <code>null</code> for a given key.
    */
 
-  public static enum Code
+  public static final class JCacheExceptionLoaderReturnedNull extends
+    JCacheException
   {
-    /**
-     * The loader for the cache returned <code>null</code> for a given key.
-     */
+    private static final long serialVersionUID = -6689633824482956839L;
 
-    LUCACHE_LOADER_RETURNED_NULL,
+    JCacheExceptionLoaderReturnedNull(
+      final @Nonnull String message)
+    {
+      super(message);
+    }
+  }
 
-    /**
-     * An object cannot be stored in the cache, because its size is greater
-     * than the cache's maximum capacity.
-     */
+  /**
+   * An object cannot be stored in the cache, because its size is greater than
+   * the cache's maximum capacity.
+   */
 
-    LUCACHE_OBJECT_TOO_LARGE,
+  public static final class JCacheExceptionObjectTooLarge extends
+    JCacheException
+  {
+    private static final long serialVersionUID = -8321243236404184147L;
 
-    /**
-     * An object cannot be stored in the cache, because its size is less than
-     * one unit.
-     */
+    JCacheExceptionObjectTooLarge(
+      final @Nonnull String message)
+    {
+      super(message);
+    }
+  }
 
-    LUCACHE_OBJECT_TOO_SMALL,
+  /**
+   * An object cannot be stored in the cache, because its size is less than
+   * one unit.
+   */
 
-    /**
-     * The cache cannot grow larger than {@link Integer#MAX_VALUE} items.
-     */
+  public static final class JCacheExceptionObjectTooSmall extends
+    JCacheException
+  {
+    private static final long serialVersionUID = -5641094673536325741L;
 
-    LUCACHE_TOO_LARGE
+    JCacheExceptionObjectTooSmall(
+      final @Nonnull String message)
+    {
+      super(message);
+    }
+  }
+
+  /**
+   * The cache cannot grow larger than {@link Integer#MAX_VALUE} items.
+   */
+
+  public static final class JCacheExceptionSizeOverflow extends
+    JCacheException
+  {
+    private static final long serialVersionUID = -4677450626738446783L;
+
+    JCacheExceptionSizeOverflow(
+      final @Nonnull String message)
+    {
+      super(message);
+    }
+  }
+
+  /**
+   * The cache has too many borrowed values.
+   */
+
+  public static final class JCacheExceptionTooManyBorrows extends
+    JCacheException
+  {
+    private static final long serialVersionUID = -2563241109501423200L;
+
+    JCacheExceptionTooManyBorrows(
+      final @Nonnull String message)
+    {
+      super(message);
+    }
   }
 
   private static final long serialVersionUID;
@@ -68,15 +116,14 @@ public final class JCacheException extends Throwable
     serialVersionUID = -4142305723422812182L;
   }
 
-  static @Nonnull JCacheException errorInternalCacheOverflow(
+  static @Nonnull JCacheExceptionSizeOverflow errorInternalCacheOverflow(
     final int size)
-    throws ConstraintError
   {
     final StringBuilder m = new StringBuilder();
     m.append("The cache cannot accept more than ");
     m.append(size);
     m.append(" items due to limitations in the Java standard library");
-    return new JCacheException(Code.LUCACHE_TOO_LARGE, m.toString());
+    return new JCacheExceptionSizeOverflow(m.toString());
   }
 
   /**
@@ -97,9 +144,7 @@ public final class JCacheException extends Throwable
     m.append("Loader returned null for '");
     m.append(key);
     m.append("'");
-    return new JCacheException(
-      Code.LUCACHE_LOADER_RETURNED_NULL,
-      m.toString());
+    return new JCacheExceptionLoaderReturnedNull(m.toString());
   }
 
   /**
@@ -130,7 +175,7 @@ public final class JCacheException extends Throwable
     m.append(size);
     m.append(", which is too large for a cache with maximum capacity of ");
     m.append(maximum);
-    return new JCacheException(Code.LUCACHE_OBJECT_TOO_LARGE, m.toString());
+    return new JCacheExceptionObjectTooLarge(m.toString());
   }
 
   /**
@@ -158,26 +203,21 @@ public final class JCacheException extends Throwable
     m.append("' is of size ");
     m.append(size);
     m.append(", which is too small: must be at least 1");
-    return new JCacheException(Code.LUCACHE_OBJECT_TOO_SMALL, m.toString());
+    return new JCacheExceptionObjectTooSmall(m.toString());
   }
 
-  private final @Nonnull Code code;
+  static @Nonnull <K> JCacheException tooManyBorrows(
+    final @Nonnull K key)
+  {
+    final StringBuilder m = new StringBuilder();
+    m.append("The cache contains too many borrowed items for key ");
+    m.append(key);
+    return new JCacheExceptionTooManyBorrows(m.toString());
+  }
 
   JCacheException(
-    final @Nonnull Code in_code,
-    final @Nonnull String in_message)
-    throws ConstraintError
+    final @Nonnull String message)
   {
-    super(in_message);
-    this.code = Constraints.constrainNotNull(in_code, "Code");
-  }
-
-  /**
-   * @return The error code for the exception
-   */
-
-  public @Nonnull Code getCode()
-  {
-    return this.code;
+    super(message);
   }
 }

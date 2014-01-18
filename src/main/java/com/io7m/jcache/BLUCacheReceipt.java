@@ -16,33 +16,40 @@
 
 package com.io7m.jcache;
 
-import java.math.BigInteger;
-
 import javax.annotation.Nonnull;
 
-import net.java.quickcheck.Generator;
-import net.java.quickcheck.generator.support.LongGenerator;
-
 import com.io7m.jaux.Constraints.ConstraintError;
-import com.io7m.jaux.UnreachableCodeException;
 
-public final class LRUCacheConfigGenerator implements
-  Generator<LRUCacheConfig>
+/**
+ * The type of receipts from borrowing caches.
+ * 
+ * @param <K>
+ *          The type of keys
+ * @param <V>
+ *          The type of values
+ */
+
+public interface BLUCacheReceipt<K, V>
 {
-  private final @Nonnull LongGenerator long_gen;
+  /**
+   * @return The original key used in the retrieval
+   */
 
-  public LRUCacheConfigGenerator()
-  {
-    this.long_gen = new LongGenerator(1, Long.MAX_VALUE);
-  }
+  public @Nonnull K getKey();
 
-  @SuppressWarnings("boxing") @Override public @Nonnull LRUCacheConfig next()
-  {
-    final BigInteger max_capacity = BigInteger.valueOf(this.long_gen.next());
-    try {
-      return LRUCacheConfig.empty().withMaximumCapacity(max_capacity);
-    } catch (final ConstraintError e) {
-      throw new UnreachableCodeException(e);
-    }
-  }
+  /**
+   * @return The value obtained during the retrieval
+   */
+
+  public @Nonnull V getValue();
+
+  /**
+   * Return the current value to the cache.
+   * 
+   * @throws ConstraintError
+   *           Iff {@link #isValid()} <tt>== false</tt>.
+   */
+
+  public void returnToCache()
+    throws ConstraintError;
 }

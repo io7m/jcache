@@ -187,7 +187,7 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
     boolean failed = true;
     V new_value = null;
 
-    checkOverflow();
+    this.checkOverflow();
 
     try {
       new_value = this.loader.cacheValueLoad(key);
@@ -221,8 +221,7 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
   }
 
   void checkOverflow()
-    throws JCacheException,
-      ConstraintError
+    throws JCacheException
   {
     if (this.items.size() == Integer.MAX_VALUE) {
       throw JCacheException.errorInternalCacheOverflow(this.items.size());

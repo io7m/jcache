@@ -25,8 +25,12 @@
     <module name="AvoidStarImport"/>
     <module name="AvoidStaticImport"/>
     <module name="BooleanExpressionComplexity"/>
-    <module name="ClassDataAbstractionCoupling"/>
-    <module name="ClassFanOutComplexity"/>
+    <module name="ClassDataAbstractionCoupling">
+      <property name="max" value="10"/>
+    </module>
+    <module name="ClassFanOutComplexity">
+      <property name="max" value="25"/>
+    </module>
     <module name="ClassTypeParameterName"/>
     <module name="ConstantName"/>
     <module name="CovariantEquals"/>
@@ -84,7 +88,7 @@
     </module>
     <!-- <module name="LeftCurly"/> -->
     <module name="LineLength">
-      <property name="max" value="81"/>
+      <property name="max" value="90"/>
     </module>
     <module name="LocalFinalVariableName">
       <property name="format" value="^([a-z][a-z0-9_]*|_)$"/>
@@ -114,7 +118,7 @@
     <module name="MultipleVariableDeclarations"/>
     <module name="MutableException"/>
     <module name="NPathComplexity">
-      <property name="max" value="50"/>
+      <property name="max" value="65"/>
     </module>
     <module name="NeedBraces"/>
     <module name="NestedForDepth">

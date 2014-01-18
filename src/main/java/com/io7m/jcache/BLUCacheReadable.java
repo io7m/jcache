@@ -16,33 +16,43 @@
 
 package com.io7m.jcache;
 
-import java.math.BigInteger;
-
 import javax.annotation.Nonnull;
 
-import net.java.quickcheck.Generator;
-import net.java.quickcheck.generator.support.LongGenerator;
-
 import com.io7m.jaux.Constraints.ConstraintError;
-import com.io7m.jaux.UnreachableCodeException;
 
-public final class LRUCacheConfigGenerator implements
-  Generator<LRUCacheConfig>
+/**
+ * The type of readable borrowing least-used caches, containing objects
+ * associated with keys of type <code>K</code>.
+ * 
+ * @param <K>
+ *          The type of keys
+ */
+
+public interface BLUCacheReadable<K> extends JCacheReadable<K>
 {
-  private final @Nonnull LongGenerator long_gen;
+  /**
+   * @return <code>true</code> iff a value associated with <code>key</code> is
+   *         available
+   * @param key
+   *          The key
+   * @throws ConstraintError
+   *           Iff <code>key == null</code>.
+   */
 
-  public LRUCacheConfigGenerator()
-  {
-    this.long_gen = new LongGenerator(1, Long.MAX_VALUE);
-  }
+  public boolean cacheIsAvailable(
+    final @Nonnull K key)
+    throws ConstraintError;
 
-  @SuppressWarnings("boxing") @Override public @Nonnull LRUCacheConfig next()
-  {
-    final BigInteger max_capacity = BigInteger.valueOf(this.long_gen.next());
-    try {
-      return LRUCacheConfig.empty().withMaximumCapacity(max_capacity);
-    } catch (final ConstraintError e) {
-      throw new UnreachableCodeException(e);
-    }
-  }
+  /**
+   * @return <code>true</code> iff a value associated with <code>key</code> is
+   *         borrowed
+   * @param key
+   *          The key
+   * @throws ConstraintError
+   *           Iff <code>key == null</code>.
+   */
+
+  public boolean cacheIsBorrowed(
+    final @Nonnull K key)
+    throws ConstraintError;
 }

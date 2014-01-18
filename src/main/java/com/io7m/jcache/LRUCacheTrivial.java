@@ -138,6 +138,14 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
     return this.cachePut(key, new_value, size);
   }
 
+  private void cacheCheckOverflow()
+    throws JCacheException
+  {
+    if (this.items.size() == Integer.MAX_VALUE) {
+      throw JCacheException.errorInternalCacheOverflow(this.items.size());
+    }
+  }
+
   @Override public void cacheDelete()
   {
     while (this.items.size() > 0) {
@@ -213,7 +221,7 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
     boolean failed = true;
     V new_value = null;
 
-    checkOverflow();
+    this.cacheCheckOverflow();
 
     try {
       new_value = this.loader.cacheValueLoad(key);
@@ -243,15 +251,6 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
           this.loader.cacheValueClose(new_value);
         }
       }
-    }
-  }
-
-  void checkOverflow()
-    throws JCacheException,
-      ConstraintError
-  {
-    if (this.items.size() == Integer.MAX_VALUE) {
-      throw JCacheException.errorInternalCacheOverflow(this.items.size());
     }
   }
 
