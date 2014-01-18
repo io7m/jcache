@@ -426,8 +426,8 @@ public final class BLUCacheTrivial<K, V, E extends Throwable> implements
     }
   }
 
-  Receipt cacheGetActual(
-    final K key)
+  private @Nonnull Receipt cacheGetActual(
+    final @Nonnull K key)
     throws ConstraintError,
       E,
       JCacheException
