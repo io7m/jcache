@@ -48,7 +48,7 @@ import com.io7m.jaux.functional.Unit;
  */
 
 public final class BLUCacheTrivial<K, V, E extends Throwable> implements
-  BLUCache<K, V, E>
+  BLUCacheType<K, V, E>
 {
   @Immutable private static final class CachedValue<V>
   {
@@ -134,7 +134,7 @@ public final class BLUCacheTrivial<K, V, E extends Throwable> implements
     }
   }
 
-  private final class Receipt implements BLUCacheReceipt<K, V>
+  private final class Receipt implements BLUCacheReceiptType<K, V>
   {
     private final @Nonnull ExtendedKey<K> key;
     private final @Nonnull BigInteger     size;
@@ -255,7 +255,7 @@ public final class BLUCacheTrivial<K, V, E extends Throwable> implements
     <K, V, E extends Throwable>
     BLUCacheTrivial<K, V, E>
     newCache(
-      final @Nonnull JCacheLoader<K, V, E> loader,
+      final @Nonnull JCacheLoaderType<K, V, E> loader,
       final @Nonnull BLUCacheConfig config)
       throws ConstraintError
   {
@@ -263,17 +263,17 @@ public final class BLUCacheTrivial<K, V, E extends Throwable> implements
   }
 
   private final @Nonnull BLUCacheConfig                           config;
-  private @CheckForNull JCacheEvents<K, V>                        events;
+  private @CheckForNull JCacheEventsType<K, V>                        events;
   private @Nonnull BigInteger                                     gets;
   private final @Nonnull Map<ExtendedKey<K>, CachedValue<V>>      items;
   private final @Nonnull Map<K, NavigableSet<BigInteger>>         items_available;
   private final @Nonnull Map<K, NavigableSet<BigInteger>>         items_borrowed;
   private final @Nonnull NavigableMap<BigInteger, ExtendedKey<K>> items_timed;
-  private final @Nonnull JCacheLoader<K, V, E>                    loader;
+  private final @Nonnull JCacheLoaderType<K, V, E>                    loader;
   private @Nonnull BigInteger                                     used;
 
   private BLUCacheTrivial(
-    final @Nonnull JCacheLoader<K, V, E> in_loader,
+    final @Nonnull JCacheLoaderType<K, V, E> in_loader,
     final @Nonnull BLUCacheConfig in_config)
     throws ConstraintError
   {
@@ -344,7 +344,7 @@ public final class BLUCacheTrivial<K, V, E extends Throwable> implements
   }
 
   @Override public void cacheEventsSubscribe(
-    final @Nonnull JCacheEvents<K, V> e)
+    final @Nonnull JCacheEventsType<K, V> e)
     throws ConstraintError
   {
     this.events = Constraints.constrainNotNull(e, "Events");

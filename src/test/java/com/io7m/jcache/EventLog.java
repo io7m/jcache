@@ -18,7 +18,7 @@ package com.io7m.jcache;
 
 import java.math.BigInteger;
 
-class EventLog<K, V> implements JCacheEvents<K, V>
+class EventLog<K, V> implements JCacheEventsType<K, V>
 {
   public EventLog()
   {

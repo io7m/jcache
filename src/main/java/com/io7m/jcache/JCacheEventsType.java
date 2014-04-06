@@ -29,7 +29,7 @@ import javax.annotation.Nonnull;
  *          The type of cached values
  */
 
-public interface JCacheEvents<K, V>
+public interface JCacheEventsType<K, V>
 {
   /**
    * <p>
@@ -47,7 +47,7 @@ public interface JCacheEvents<K, V>
    *          The exception raised
    */
 
-  public void cacheEventValueCloseError(
+  void cacheEventValueCloseError(
     final @Nonnull K key,
     final @Nonnull V value,
     final @Nonnull BigInteger size,
@@ -67,7 +67,7 @@ public interface JCacheEvents<K, V>
    *          The size of <tt>value</tt>
    */
 
-  public void cacheEventValueEvicted(
+  void cacheEventValueEvicted(
     final @Nonnull K key,
     final @Nonnull V value,
     final @Nonnull BigInteger size);
@@ -86,7 +86,7 @@ public interface JCacheEvents<K, V>
    *          The size of <tt>value</tt>
    */
 
-  public void cacheEventValueLoaded(
+  void cacheEventValueLoaded(
     final @Nonnull K key,
     final @Nonnull V value,
     final @Nonnull BigInteger size);
@@ -104,7 +104,7 @@ public interface JCacheEvents<K, V>
    *          The size of <tt>value</tt>
    */
 
-  public void cacheEventValueRetrieved(
+  void cacheEventValueRetrieved(
     final @Nonnull K key,
     final @Nonnull V value,
     final @Nonnull BigInteger size);

@@ -28,18 +28,18 @@ import com.io7m.jcache.JCacheException.JCacheExceptionLoaderReturnedNull;
 import com.io7m.jcache.JCacheException.JCacheExceptionObjectTooLarge;
 import com.io7m.jcache.JCacheException.JCacheExceptionObjectTooSmall;
 import com.io7m.jcache.LUCacheLoaderFaultInjectable.Failure;
-import com.io7m.jcache.PCacheConfig.Builder;
+import com.io7m.jcache.PCacheConfig.BuilderType;
 
 public final class PCacheTrivialTest
 {
   @SuppressWarnings("static-method") private
-    PCache<Integer, Integer, Failure>
+    PCacheType<Integer, Integer, Failure>
     newCache()
   {
     try {
-      PCache<Integer, Integer, Failure> pc;
+      PCacheType<Integer, Integer, Failure> pc;
       PCacheConfig c;
-      final Builder b = PCacheConfig.newBuilder();
+      final BuilderType b = PCacheConfig.newBuilder();
       c = b.create();
       final LUCacheLoaderFaultInjectable<Integer, Integer> loader =
         new LUCacheLoaderFaultInjectable<Integer, Integer>();
@@ -51,21 +51,21 @@ public final class PCacheTrivialTest
   }
 
   @SuppressWarnings("static-method") private
-    Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>>
+    Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>>
     newCacheWithMaximumAge(
       final long age)
   {
     try {
-      PCache<String, Integer, Failure> pc;
+      PCacheType<String, Integer, Failure> pc;
       PCacheConfig c;
-      final Builder b = PCacheConfig.newBuilder();
+      final BuilderType b = PCacheConfig.newBuilder();
       b.setMaximumAge(BigInteger.valueOf(age));
       b.setNoMaximumSize();
       c = b.create();
       final LUCacheLoaderFaultInjectable<String, Integer> loader =
         new LUCacheLoaderFaultInjectable<String, Integer>();
       pc = PCacheTrivial.newCache(loader, c);
-      return new Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>>(
+      return new Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>>(
         pc,
         loader);
     } catch (final ConstraintError x) {
@@ -74,21 +74,21 @@ public final class PCacheTrivialTest
   }
 
   @SuppressWarnings("static-method") private
-    Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>>
+    Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>>
     newCacheWithMaximumSize(
       final long size)
   {
     try {
-      PCache<String, Integer, Failure> pc;
+      PCacheType<String, Integer, Failure> pc;
       PCacheConfig c;
-      final Builder b = PCacheConfig.newBuilder();
+      final BuilderType b = PCacheConfig.newBuilder();
       b.setNoMaximumAge();
       b.setMaximumSize(BigInteger.valueOf(size));
       c = b.create();
       final LUCacheLoaderFaultInjectable<String, Integer> loader =
         new LUCacheLoaderFaultInjectable<String, Integer>();
       pc = PCacheTrivial.newCache(loader, c);
-      return new Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>>(
+      return new Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>>(
         pc,
         loader);
     } catch (final ConstraintError x) {
@@ -107,7 +107,7 @@ public final class PCacheTrivialTest
       ConstraintError,
       JCacheException
   {
-    final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
+    final Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(2);
 
     final EventLog<String, Integer> ev = new EventLog<String, Integer>();
@@ -192,7 +192,7 @@ public final class PCacheTrivialTest
       ConstraintError,
       JCacheException
   {
-    final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
+    final Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(1);
 
     final EventLog<String, Integer> ev = new EventLog<String, Integer>();
@@ -233,7 +233,7 @@ public final class PCacheTrivialTest
       ConstraintError,
       JCacheException
   {
-    final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
+    final Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(2);
 
     pair.first.cachePeriodStart();
@@ -277,7 +277,7 @@ public final class PCacheTrivialTest
     throws ConstraintError,
       JCacheException
   {
-    final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
+    final Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(2L);
     pair.first.cacheEventsSubscribe(null);
   }
@@ -287,7 +287,7 @@ public final class PCacheTrivialTest
       Failure,
       JCacheException
   {
-    final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> p =
+    final Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> p =
       this.newCacheWithMaximumAge(2);
 
     p.first.cacheEventsSubscribe(new EventLog<String, Integer>());
@@ -328,7 +328,7 @@ public final class PCacheTrivialTest
       Failure,
       JCacheException
   {
-    final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> p =
+    final Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> p =
       this.newCacheWithMaximumSize(10);
 
     p.first.cacheEventsSubscribe(new EventLog<String, Integer>());
@@ -381,7 +381,7 @@ public final class PCacheTrivialTest
       Failure,
       JCacheException
   {
-    PCache<Integer, Integer, Failure> pc = null;
+    PCacheType<Integer, Integer, Failure> pc = null;
 
     pc = this.newCache();
     assert pc != null;
@@ -393,7 +393,7 @@ public final class PCacheTrivialTest
       Failure,
       JCacheException
   {
-    PCache<Integer, Integer, Failure> pc = null;
+    PCacheType<Integer, Integer, Failure> pc = null;
 
     pc = this.newCache();
     assert pc != null;
@@ -434,7 +434,7 @@ public final class PCacheTrivialTest
       ConstraintError,
       JCacheException
   {
-    final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
+    final Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(32L);
 
     pair.second.setFailure(true);
@@ -457,7 +457,7 @@ public final class PCacheTrivialTest
         ConstraintError,
         JCacheException
   {
-    final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
+    final Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumSize(32L);
 
     pair.second.setFailure(false);
@@ -480,7 +480,7 @@ public final class PCacheTrivialTest
         ConstraintError,
         JCacheException
   {
-    final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
+    final Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(32L);
 
     pair.second.setFailure(false);
@@ -503,7 +503,7 @@ public final class PCacheTrivialTest
         ConstraintError,
         JCacheException
   {
-    final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
+    final Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(32L);
 
     pair.second.setFailure(false);
@@ -530,7 +530,7 @@ public final class PCacheTrivialTest
   {
     PCacheConfig c = null;
     try {
-      final Builder b = PCacheConfig.newBuilder();
+      final BuilderType b = PCacheConfig.newBuilder();
       c = b.create();
     } catch (final ConstraintError x) {
       throw new UnreachableCodeException(x);
@@ -545,7 +545,7 @@ public final class PCacheTrivialTest
     testPeriodAlreadyStarted()
       throws ConstraintError
   {
-    PCache<Integer, Integer, Failure> pc = null;
+    PCacheType<Integer, Integer, Failure> pc = null;
 
     try {
       pc = this.newCache();
@@ -561,7 +561,7 @@ public final class PCacheTrivialTest
   @Test(expected = ConstraintError.class) public void testPeriodNotStarted()
     throws ConstraintError
   {
-    PCache<Integer, Integer, Failure> pc = null;
+    PCacheType<Integer, Integer, Failure> pc = null;
 
     pc = this.newCache();
     assert pc != null;
@@ -579,7 +579,7 @@ public final class PCacheTrivialTest
       ConstraintError,
       JCacheException
   {
-    final Pair<PCache<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
+    final Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(2);
 
     final EventLog<String, Integer> ev = new EventLog<String, Integer>();

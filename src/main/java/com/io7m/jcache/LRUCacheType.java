@@ -16,47 +16,23 @@
 
 package com.io7m.jcache;
 
-import java.math.BigInteger;
-
-import javax.annotation.Nonnull;
-
-import com.io7m.jaux.Constraints.ConstraintError;
-
 /**
- * The type of readable least-used caches, containing objects associated with
- * keys of type <code>K</code>.
+ * The type of mutable least-recently-used caches.
  * 
  * @param <K>
  *          The type of keys
+ * @param <V>
+ *          The type of cached values
+ * @param <E>
+ *          The type of exceptions raised during loading
  */
 
-public interface JCacheReadable<K>
+public interface LRUCacheType<K, V, E extends Throwable> extends
+  LUCacheType<K, V, E>
 {
   /**
-   * Return <code>true</code> if an object is cached for <code>key</code>.
-   * 
-   * @param key
-   *          The key to query.
-   * @return <code>true</code> if an object is cached for <code>key</code>.
-   * @throws ConstraintError
-   *           Iff <code>key == null</code>, or an internal constraint error
-   *           occurs.
+   * @return The configuration for the cache.
    */
 
-  public boolean cacheIsCached(
-    final @Nonnull K key)
-    throws ConstraintError;
-
-  /**
-   * @return The number of items cached.
-   */
-
-  public @Nonnull BigInteger cacheItemCount();
-
-  /**
-   * @return The size of the current cache, in units.
-   */
-
-  public @Nonnull BigInteger cacheSize();
-
+  LRUCacheConfig lruCacheConfiguration();
 }

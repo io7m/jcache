@@ -33,10 +33,10 @@ import com.io7m.jaux.Constraints.ConstraintError;
  *          The type of exceptions raised during loading
  */
 
-public interface LUCache<K, V, E extends Throwable> extends
-  JCacheReadable<K>,
-  JCacheDeletable,
-  JCacheEventsSubscription<K, V>
+public interface LUCacheType<K, V, E extends Throwable> extends
+  JCacheReadableType<K>,
+  JCacheDeletableType,
+  JCacheEventsSubscriptionType<K, V>
 {
   /**
    * Retrieve a value named <code>key</code>, loading it if necessary.
@@ -56,7 +56,7 @@ public interface LUCache<K, V, E extends Throwable> extends
    *           implementation).
    */
 
-  public @Nonnull V cacheGetLU(
+  @Nonnull V cacheGetLU(
     final @Nonnull K key)
     throws ConstraintError,
       E,

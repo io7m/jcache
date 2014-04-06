@@ -21,7 +21,7 @@ import javax.annotation.Nonnull;
 import com.io7m.jaux.Constraints.ConstraintError;
 
 /**
- * The type of receipts from borrowing caches.
+ * Interface for subscribing to cache events.
  * 
  * @param <K>
  *          The type of keys
@@ -29,27 +29,27 @@ import com.io7m.jaux.Constraints.ConstraintError;
  *          The type of values
  */
 
-public interface BLUCacheReceipt<K, V>
+public interface JCacheEventsSubscriptionType<K, V>
 {
   /**
-   * @return The original key used in the retrieval
-   */
-
-  public @Nonnull K getKey();
-
-  /**
-   * @return The value obtained during the retrieval
-   */
-
-  public @Nonnull V getValue();
-
-  /**
-   * Return the current value to the cache.
+   * Subscribe to events for the current cache, replacing any existing
+   * subscriptions (if any). The cache will call functions in the given
+   * interface when events occur.
    * 
+   * @param events
+   *          The event receiver.
    * @throws ConstraintError
-   *           Iff {@link #isValid()} <tt>== false</tt>.
+   *           Iff <code>events == null</code>.
    */
 
-  public void returnToCache()
+  void cacheEventsSubscribe(
+    final @Nonnull JCacheEventsType<K, V> events)
     throws ConstraintError;
+
+  /**
+   * Stop receiving events for the current cache.
+   */
+
+  void cacheEventsUnsubscribe();
+
 }

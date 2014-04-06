@@ -43,7 +43,7 @@ import com.io7m.jaux.Constraints.ConstraintError;
  */
 
 public final class LRUCacheTrivial<K, V, E extends Throwable> implements
-  LRUCache<K, V, E>
+  LRUCacheType<K, V, E>
 {
   @Immutable private static final class CachedValue<V>
   {
@@ -100,7 +100,7 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
     <K, V, E extends Throwable>
     LRUCacheTrivial<K, V, E>
     newCache(
-      final @Nonnull JCacheLoader<K, V, E> loader,
+      final @Nonnull JCacheLoaderType<K, V, E> loader,
       final @Nonnull LRUCacheConfig config)
       throws ConstraintError
   {
@@ -108,15 +108,15 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
   }
 
   private final @Nonnull LRUCacheConfig              config;
-  private @CheckForNull JCacheEvents<K, V>           events;
+  private @CheckForNull JCacheEventsType<K, V>           events;
   private @Nonnull BigInteger                        gets;
   private final @Nonnull Map<K, CachedValue<V>>      items;
-  private final @Nonnull JCacheLoader<K, V, E>       loader;
+  private final @Nonnull JCacheLoaderType<K, V, E>       loader;
   private final @Nonnull NavigableMap<BigInteger, K> time_items;
   private @Nonnull BigInteger                        used;
 
   private LRUCacheTrivial(
-    final @Nonnull JCacheLoader<K, V, E> in_loader,
+    final @Nonnull JCacheLoaderType<K, V, E> in_loader,
     final @Nonnull LRUCacheConfig in_config)
     throws ConstraintError
   {
@@ -157,7 +157,7 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
   }
 
   @Override public void cacheEventsSubscribe(
-    final @Nonnull JCacheEvents<K, V> e)
+    final @Nonnull JCacheEventsType<K, V> e)
     throws ConstraintError
   {
     this.events = Constraints.constrainNotNull(e, "Events");

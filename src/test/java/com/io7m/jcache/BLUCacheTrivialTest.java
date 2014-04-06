@@ -74,7 +74,7 @@ public class BLUCacheTrivialTest
     loader.setLoadedValue(BigInteger.valueOf(23L));
     loader.setLoadedValueSize(BigInteger.ONE);
 
-    final BLUCacheReceipt<String, BigInteger> r0 = cache.bluCacheGet("key0");
+    final BLUCacheReceiptType<String, BigInteger> r0 = cache.bluCacheGet("key0");
     Assert.assertEquals(BigInteger.ONE, cache.cacheSize());
     Assert.assertEquals(BigInteger.ONE, cache.cacheItemCount());
     Assert.assertTrue(cache.cacheIsBorrowed("key0"));
@@ -138,7 +138,7 @@ public class BLUCacheTrivialTest
     loader.setLoadedValueSize(BigInteger.ONE);
 
     for (int index = 0; index < 10; ++index) {
-      final BLUCacheReceipt<String, BigInteger> r = cache.bluCacheGet("key0");
+      final BLUCacheReceiptType<String, BigInteger> r = cache.bluCacheGet("key0");
       Assert.assertEquals(BigInteger.ONE, cache.cacheSize());
       Assert.assertEquals(BigInteger.ONE, cache.cacheItemCount());
       Assert.assertTrue(cache.cacheIsBorrowed("key0"));
@@ -171,7 +171,7 @@ public class BLUCacheTrivialTest
       new EventLog<String, BigInteger>();
     cache.cacheEventsSubscribe(elog);
 
-    final BLUCacheReceipt<String, BigInteger> r = cache.bluCacheGet("key0");
+    final BLUCacheReceiptType<String, BigInteger> r = cache.bluCacheGet("key0");
     Assert.assertTrue(elog.loaded);
     Assert.assertEquals("key0", elog.loaded_key);
     Assert.assertEquals(BigInteger.valueOf(23L), elog.loaded_value);
@@ -194,7 +194,7 @@ public class BLUCacheTrivialTest
       this.newCache(bound, 2);
     final BLUCacheTrivial<String, BigInteger, Failure> cache = pair.second;
 
-    final JCacheEvents<String, BigInteger> elog =
+    final JCacheEventsType<String, BigInteger> elog =
       new EventLog<String, BigInteger>();
     pair.second.cacheEventsSubscribe(elog);
 
@@ -261,17 +261,17 @@ public class BLUCacheTrivialTest
 
     final LUCacheLoaderFaultInjectable<String, BigInteger> loader =
       pair.first;
-    final JCacheEvents<String, BigInteger> elog =
+    final JCacheEventsType<String, BigInteger> elog =
       new EventLog<String, BigInteger>();
     pair.second.cacheEventsSubscribe(elog);
 
-    final ArrayList<BLUCacheReceipt<String, BigInteger>> receipts =
-      new ArrayList<BLUCacheReceipt<String, BigInteger>>();
+    final ArrayList<BLUCacheReceiptType<String, BigInteger>> receipts =
+      new ArrayList<BLUCacheReceiptType<String, BigInteger>>();
 
     for (int index = 0; index < 32; ++index) {
       final int return_index = index - bound;
       if (return_index >= 0) {
-        final BLUCacheReceipt<String, BigInteger> r =
+        final BLUCacheReceiptType<String, BigInteger> r =
           receipts.get(return_index);
         System.out.println("Returning " + r);
         r.returnToCache();
@@ -283,7 +283,7 @@ public class BLUCacheTrivialTest
       final String key = "key" + index;
       final BigInteger count = BigInteger.valueOf(Math.min(bound, index + 1));
 
-      final BLUCacheReceipt<String, BigInteger> r = cache.bluCacheGet(key);
+      final BLUCacheReceiptType<String, BigInteger> r = cache.bluCacheGet(key);
       Assert.assertEquals(count, cache.cacheSize());
       Assert.assertEquals(count, cache.cacheItemCount());
       Assert.assertTrue(cache.cacheIsBorrowed(key));
@@ -384,7 +384,7 @@ public class BLUCacheTrivialTest
     pair.first.setLoadedValueSize(BigInteger.ONE);
     pair.second.cacheEventsSubscribe(elog);
 
-    final BLUCacheReceipt<String, BigInteger> r =
+    final BLUCacheReceiptType<String, BigInteger> r =
       pair.second.bluCacheGet("key0");
 
     r.returnToCache();

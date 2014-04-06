@@ -28,7 +28,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.io7m.jaux.Constraints.ConstraintError;
-import com.io7m.jcache.PCacheConfig.Builder;
+import com.io7m.jcache.PCacheConfig.BuilderType;
 
 public final class PCacheConfigTest
 {
@@ -45,7 +45,7 @@ public final class PCacheConfigTest
           final BigInteger xii = xi.add(BigInteger.ONE);
 
           final Long y = Long.valueOf(xii.longValue());
-          final Builder b = PCacheConfig.newBuilder();
+          final BuilderType b = PCacheConfig.newBuilder();
           b.setMaximumAge(xi);
           b.setMaximumSize(xii);
           Assert.assertEquals(xi, b.getMaximumAge());
@@ -83,7 +83,7 @@ public final class PCacheConfigTest
     testNoLimit()
       throws ConstraintError
   {
-    final Builder b = PCacheConfig.newBuilder();
+    final BuilderType b = PCacheConfig.newBuilder();
     b.setNoMaximumAge();
     b.setNoMaximumSize();
     b.create();

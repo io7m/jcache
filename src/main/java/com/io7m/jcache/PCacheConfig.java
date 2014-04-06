@@ -34,7 +34,7 @@ import com.io7m.jaux.Constraints.ConstraintError;
    * A mutable configuration builder.
    */
 
-  public interface Builder
+  public interface BuilderType
   {
     /**
      * @return A new configuration with all of the settings configured so far
@@ -43,20 +43,20 @@ import com.io7m.jaux.Constraints.ConstraintError;
      *           Iff both the maximum age and maximum size are unlimited.
      */
 
-    public @Nonnull PCacheConfig create()
+    @Nonnull PCacheConfig create()
       throws ConstraintError;
 
     /**
      * @return The current maximum age.
      */
 
-    public @Nonnull BigInteger getMaximumAge();
+    @Nonnull BigInteger getMaximumAge();
 
     /**
      * @return The current maximum size, in units.
      */
 
-    public @Nonnull BigInteger getMaximumSize();
+    @Nonnull BigInteger getMaximumSize();
 
     /**
      * Set the current maximum age.
@@ -67,7 +67,7 @@ import com.io7m.jaux.Constraints.ConstraintError;
      *           Iff <code>age &lt; 1</code>.
      */
 
-    public void setMaximumAge(
+    void setMaximumAge(
       final @Nonnull BigInteger age)
       throws ConstraintError;
 
@@ -80,7 +80,7 @@ import com.io7m.jaux.Constraints.ConstraintError;
      *           Iff <code>size &lt; 1</code>.
      */
 
-    public void setMaximumSize(
+    void setMaximumSize(
       final @Nonnull BigInteger size)
       throws ConstraintError;
 
@@ -88,22 +88,22 @@ import com.io7m.jaux.Constraints.ConstraintError;
      * Remove any limit on the maximum age of cached items.
      */
 
-    public void setNoMaximumAge();
+    void setNoMaximumAge();
 
     /**
      * Remove any limit on the maximum size of the cache.
      */
 
-    public void setNoMaximumSize();
+    void setNoMaximumSize();
   }
 
   /**
    * @return A new builder from which to create configurations.
    */
 
-  public static @Nonnull Builder newBuilder()
+  public static @Nonnull BuilderType newBuilder()
   {
-    return new Builder() {
+    return new BuilderType() {
       private BigInteger maximum_age  = BigInteger.ONE;
       private BigInteger maximum_size = BigInteger.ONE;
 

@@ -20,11 +20,11 @@ package com.io7m.jcache;
  * The type of mutable caches that can be deleted.
  */
 
-public interface JCacheDeletable
+public interface JCacheDeletableType
 {
   /**
    * Delete all cached items.
    */
 
-  public void cacheDelete();
+  void cacheDelete();
 }

@@ -16,22 +16,43 @@
 
 package com.io7m.jcache;
 
+import javax.annotation.Nonnull;
+
+import com.io7m.jaux.Constraints.ConstraintError;
+
 /**
- * The type of mutable least-recently-used caches.
+ * The type of readable borrowing least-used caches, containing objects
+ * associated with keys of type <code>K</code>.
  * 
  * @param <K>
  *          The type of keys
- * @param <V>
- *          The type of cached values
- * @param <E>
- *          The type of exceptions raised during loading
  */
 
-public interface LRUCache<K, V, E extends Throwable> extends LUCache<K, V, E>
+public interface BLUCacheReadableType<K> extends JCacheReadableType<K>
 {
   /**
-   * @return The configuration for the cache.
+   * @return <code>true</code> iff a value associated with <code>key</code> is
+   *         available
+   * @param key
+   *          The key
+   * @throws ConstraintError
+   *           Iff <code>key == null</code>.
    */
 
-  public LRUCacheConfig lruCacheConfiguration();
+  boolean cacheIsAvailable(
+    final @Nonnull K key)
+    throws ConstraintError;
+
+  /**
+   * @return <code>true</code> iff a value associated with <code>key</code> is
+   *         borrowed
+   * @param key
+   *          The key
+   * @throws ConstraintError
+   *           Iff <code>key == null</code>.
+   */
+
+  boolean cacheIsBorrowed(
+    final @Nonnull K key)
+    throws ConstraintError;
 }

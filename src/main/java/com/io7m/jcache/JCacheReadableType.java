@@ -16,43 +16,47 @@
 
 package com.io7m.jcache;
 
+import java.math.BigInteger;
+
 import javax.annotation.Nonnull;
 
 import com.io7m.jaux.Constraints.ConstraintError;
 
 /**
- * The type of readable borrowing least-used caches, containing objects
- * associated with keys of type <code>K</code>.
+ * The type of readable least-used caches, containing objects associated with
+ * keys of type <code>K</code>.
  * 
  * @param <K>
  *          The type of keys
  */
 
-public interface BLUCacheReadable<K> extends JCacheReadable<K>
+public interface JCacheReadableType<K>
 {
   /**
-   * @return <code>true</code> iff a value associated with <code>key</code> is
-   *         available
+   * Return <code>true</code> if an object is cached for <code>key</code>.
+   * 
    * @param key
-   *          The key
+   *          The key to query.
+   * @return <code>true</code> if an object is cached for <code>key</code>.
    * @throws ConstraintError
-   *           Iff <code>key == null</code>.
+   *           Iff <code>key == null</code>, or an internal constraint error
+   *           occurs.
    */
 
-  public boolean cacheIsAvailable(
+  boolean cacheIsCached(
     final @Nonnull K key)
     throws ConstraintError;
 
   /**
-   * @return <code>true</code> iff a value associated with <code>key</code> is
-   *         borrowed
-   * @param key
-   *          The key
-   * @throws ConstraintError
-   *           Iff <code>key == null</code>.
+   * @return The number of items cached.
    */
 
-  public boolean cacheIsBorrowed(
-    final @Nonnull K key)
-    throws ConstraintError;
+  @Nonnull BigInteger cacheItemCount();
+
+  /**
+   * @return The size of the current cache, in units.
+   */
+
+  @Nonnull BigInteger cacheSize();
+
 }

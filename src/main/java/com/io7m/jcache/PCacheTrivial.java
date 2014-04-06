@@ -33,7 +33,7 @@ import com.io7m.jaux.Constraints;
 import com.io7m.jaux.Constraints.ConstraintError;
 
 /**
- * A trivial implementation of the {@link PCache} interface.
+ * A trivial implementation of the {@link PCacheType} interface.
  * 
  * @param <K>
  *          The type of keys
@@ -44,7 +44,7 @@ import com.io7m.jaux.Constraints.ConstraintError;
  */
 
 public final class PCacheTrivial<K, V, E extends Throwable> implements
-  PCache<K, V, E>
+  PCacheType<K, V, E>
 {
   @Immutable private static final class CachedValue<V>
   {
@@ -99,9 +99,9 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
 
   public static @Nonnull
     <K, V, E extends Throwable>
-    PCache<K, V, E>
+    PCacheType<K, V, E>
     newCache(
-      final @Nonnull JCacheLoader<K, V, E> loader,
+      final @Nonnull JCacheLoaderType<K, V, E> loader,
       final @Nonnull PCacheConfig config)
       throws ConstraintError
   {
@@ -109,17 +109,17 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
   }
 
   private final @Nonnull PCacheConfig                     config;
-  private @CheckForNull JCacheEvents<K, V>                events;
+  private @CheckForNull JCacheEventsType<K, V>                events;
   private final @Nonnull Set<K>                           item_removals;
   private final @Nonnull Map<K, CachedValue<V>>           items;
   private final @Nonnull NavigableMap<BigInteger, Set<K>> items_by_time;
-  private final @Nonnull JCacheLoader<K, V, E>            loader;
+  private final @Nonnull JCacheLoaderType<K, V, E>            loader;
   private boolean                                         period;
   private @Nonnull BigInteger                             time;
   private @Nonnull BigInteger                             used;
 
   private PCacheTrivial(
-    final @Nonnull JCacheLoader<K, V, E> in_loader,
+    final @Nonnull JCacheLoaderType<K, V, E> in_loader,
     final @Nonnull PCacheConfig in_config)
     throws ConstraintError
   {
@@ -363,7 +363,7 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
   }
 
   @Override public void cacheEventsSubscribe(
-    final @Nonnull JCacheEvents<K, V> e)
+    final @Nonnull JCacheEventsType<K, V> e)
     throws ConstraintError
   {
     this.events = Constraints.constrainNotNull(e, "Events");

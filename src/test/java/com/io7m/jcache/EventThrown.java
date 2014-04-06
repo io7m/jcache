@@ -18,7 +18,7 @@ package com.io7m.jcache;
 
 import java.math.BigInteger;
 
-class EventThrown<K, V> implements JCacheEvents<K, V>
+class EventThrown<K, V> implements JCacheEventsType<K, V>
 {
   @Override public void cacheEventValueCloseError(
     final K key,

@@ -6,7 +6,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.io7m.jcache</groupId>
   <artifactId>io7m-jcache</artifactId>
-  <version>0.3.0</version>
+  <version>0.4.0</version>
   <packaging>jar</packaging>
   <name>io7m-jcache</name>
   <description>Generic cache algorithms</description>

@@ -25,7 +25,7 @@ import com.io7m.jaux.Constraints.ConstraintError;
  * The type of mutable borrowing least-used caches.
  * </p>
  * <p>
- * A borrowing cache operates as a normal {@link LUCache} except that
+ * A borrowing cache operates as a normal {@link LUCacheType} except that
  * requested keys are marked as <i>borrowed</i> until they are explicitly
  * returned. Attempting to request a key multiple times results in multiple
  * values being loaded by the cache so that each requester receives a fresh
@@ -33,7 +33,7 @@ import com.io7m.jaux.Constraints.ConstraintError;
  * </p>
  * <p>
  * Because keys and values must be explicitly returned to the cache, a
- * {@link BLUCache} is not interchangeable with a {@link LUCache} and
+ * {@link BLUCacheType} is not interchangeable with a {@link LUCacheType} and
  * therefore is not type-compatible.
  * </p>
  * 
@@ -45,10 +45,10 @@ import com.io7m.jaux.Constraints.ConstraintError;
  *          The type of exceptions raised during loading
  */
 
-public interface BLUCache<K, V, E extends Throwable> extends
-  JCacheDeletable,
-  JCacheEventsSubscription<K, V>,
-  BLUCacheReadable<K>
+public interface BLUCacheType<K, V, E extends Throwable> extends
+  JCacheDeletableType,
+  JCacheEventsSubscriptionType<K, V>,
+  BLUCacheReadableType<K>
 {
   /**
    * <p>
@@ -75,7 +75,7 @@ public interface BLUCache<K, V, E extends Throwable> extends
    *           implementation).
    */
 
-  public @Nonnull BLUCacheReceipt<K, V> bluCacheGet(
+  @Nonnull BLUCacheReceiptType<K, V> bluCacheGet(
     final @Nonnull K key)
     throws ConstraintError,
       E,

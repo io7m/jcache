@@ -26,7 +26,7 @@ import javax.annotation.Nonnull;
  */
 
 public final class LUCacheLoaderFaultInjectable<K, V> implements
-  JCacheLoader<K, V, LUCacheLoaderFaultInjectable.Failure>
+  JCacheLoaderType<K, V, LUCacheLoaderFaultInjectable.Failure>
 {
   static class Failure extends Exception
   {
@@ -68,26 +68,26 @@ public final class LUCacheLoaderFaultInjectable<K, V> implements
   }
 
   public void setCloseFailure(
-    final boolean fail)
+    final boolean fail1)
   {
-    this.close_fail = fail;
+    this.close_fail = fail1;
   }
 
   public void setFailure(
-    final boolean fail)
+    final boolean fail1)
   {
-    this.fail = fail;
+    this.fail = fail1;
   }
 
   public void setLoadedValue(
-    final @Nonnull V value)
+    final @Nonnull V value1)
   {
-    this.value = value;
+    this.value = value1;
   }
 
   public void setLoadedValueSize(
-    final BigInteger size)
+    final BigInteger size1)
   {
-    this.size = size;
+    this.size = size1;
   }
 }
