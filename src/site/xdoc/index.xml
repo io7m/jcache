@@ -5,14 +5,13 @@
   xsi:schemaLocation="http://maven.apache.org/XDOC/2.0 http://maven.apache.org/xsd/xdoc-2.0.xsd">
 
   <properties>
-    <title>io7m-jlucache</title>
+    <title>io7m-jcache</title>
   </properties>
 
   <body>
-    <subsection name="jlucache">
+    <subsection name="jcache">
       <p>
-        The <var>jlucache</var> package implements a set of generic least-used
-        caches.
+        The <var>jcache</var> package implements a set of generic caches.
       </p>
     </subsection>
     <subsection name="features">
