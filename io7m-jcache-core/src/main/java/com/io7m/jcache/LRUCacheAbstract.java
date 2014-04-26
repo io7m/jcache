@@ -32,27 +32,32 @@ import com.io7m.jnull.NullCheck;
  * override all of the methods themselves). For example:
  * </p>
  * <p>
- * <code>
- * interface ShortNameType extends LRUCacheType<Integer, Boolean, IllegalArgumentException> 
- * { 
+ * 
+ * <pre>
+ * interface ShortNameType extends
+ *   LRUCacheType&lt;Integer, Boolean, IllegalArgumentException&gt;
+ * {
  * 
  * }
  * 
- * final class ShortNameCache
- *   extends LRUCacheAbstract<Integer, Boolean, IllegalArgumentException>
- *   implements ShortNameType
+ * final class ShortNameCache extends
+ *   LRUCacheAbstract&lt;Integer, Boolean, IllegalArgumentException&gt; implements
+ *   ShortNameType
  * {
- *   public static ShortNameType wrap(LRUCacheType<Integer, Boolean, IllegalArgumentException> c)
+ *   public static ShortNameType wrap(
+ *     LRUCacheType&lt;Integer, Boolean, IllegalArgumentException&gt; c)
  *   {
  *     return new ShortNameCache(c);
  *   }
- *   
- *   private ShortNameCache(LRUCacheType<Integer, Boolean, IllegalArgumentException> c)
+ * 
+ *   private ShortNameCache(
+ *     LRUCacheType&lt;Integer, Boolean, IllegalArgumentException&gt; c)
  *   {
  *     super(c);
  *   }
  * }
- * </code>
+ * </pre>
+ * 
  * </p>
  * <p>
  * Now,

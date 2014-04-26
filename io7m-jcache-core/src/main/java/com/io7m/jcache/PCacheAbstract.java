@@ -32,27 +32,32 @@ import com.io7m.jnull.NullCheck;
  * override all of the methods themselves). For example:
  * </p>
  * <p>
- * <code>
- * interface ShortNameType extends PCacheType<Integer, Boolean, IllegalArgumentException> 
- * { 
+ * 
+ * <pre>
+ * interface ShortNameType extends
+ *   PCacheType&lt;Integer, Boolean, IllegalArgumentException&gt;
+ * {
  * 
  * }
  * 
- * final class ShortNameCache
- *   extends PCacheAbstract<Integer, Boolean, IllegalArgumentException>
- *   implements ShortNameType
+ * final class ShortNameCache extends
+ *   PCacheAbstract&lt;Integer, Boolean, IllegalArgumentException&gt; implements
+ *   ShortNameType
  * {
- *   public static ShortNameType wrap(PCacheType<Integer, Boolean, IllegalArgumentException> c)
+ *   public static ShortNameType wrap(
+ *     PCacheType&lt;Integer, Boolean, IllegalArgumentException&gt; c)
  *   {
  *     return new ShortNameCache(c);
  *   }
- *   
- *   private ShortNameCache(PCacheType<Integer, Boolean, IllegalArgumentException> c)
+ * 
+ *   private ShortNameCache(
+ *     PCacheType&lt;Integer, Boolean, IllegalArgumentException&gt; c)
  *   {
  *     super(c);
  *   }
  * }
- * </code>
+ * </pre>
+ * 
  * </p>
  * <p>
  * Now,
