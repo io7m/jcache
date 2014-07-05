@@ -1,10 +1,10 @@
 /*
  * Copyright © 2014 <code@io7m.com> http://io7m.com
- * 
+ *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
  * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
@@ -34,10 +34,10 @@ import com.io7m.jnull.NonNull;
 public class BLUCacheAbstractTest
 {
   private final class Completeness extends
-    BLUCacheAbstract<Integer, Integer, IllegalArgumentException>
+    BLUCacheAbstract<Integer, Integer, Integer, IllegalArgumentException>
   {
     protected Completeness(
-      final BLUCacheType<Integer, Integer, IllegalArgumentException> in_cache)
+      final BLUCacheType<Integer, Integer, Integer, IllegalArgumentException> in_cache)
     {
       super(in_cache);
     }
@@ -50,7 +50,7 @@ public class BLUCacheAbstractTest
     final BitSet calls = new BitSet();
     final Completeness c =
       new Completeness(
-        new BLUCacheType<Integer, Integer, IllegalArgumentException>() {
+        new BLUCacheType<Integer, Integer, Integer, IllegalArgumentException>() {
           @Override public BLUCacheReceiptType<Integer, Integer> bluCacheGet(
             final Integer key)
             throws IllegalArgumentException,

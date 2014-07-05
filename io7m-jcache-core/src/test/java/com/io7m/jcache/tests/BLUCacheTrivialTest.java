@@ -38,8 +38,8 @@ import com.io7m.jfunctional.Pair;
 public class BLUCacheTrivialTest
 {
   @SuppressWarnings("static-method") private @Nonnull
-    <K, V>
-    Pair<LUCacheLoaderFaultInjectable<K, V>, BLUCacheTrivial<K, V, Failure>>
+    <K, TVIEW, TCACHE extends TVIEW>
+    Pair<LUCacheLoaderFaultInjectable<K, TCACHE>, BLUCacheTrivial<K, TVIEW, TCACHE, Failure>>
     newCache(
       final long capacity,
       final long max_borrows)
@@ -50,9 +50,9 @@ public class BLUCacheTrivialTest
         .withMaximumCapacity(BigInteger.valueOf(capacity))
         .withMaximumBorrowsPerKey(BigInteger.valueOf(max_borrows));
 
-    final LUCacheLoaderFaultInjectable<K, V> loader =
-      new LUCacheLoaderFaultInjectable<K, V>();
-    final BLUCacheTrivial<K, V, Failure> cache =
+    final LUCacheLoaderFaultInjectable<K, TCACHE> loader =
+      new LUCacheLoaderFaultInjectable<K, TCACHE>();
+    final BLUCacheTrivial<K, TVIEW, TCACHE, Failure> cache =
       BLUCacheTrivial.newCache(loader, config);
     return Pair.pair(loader, cache);
   }
@@ -61,9 +61,9 @@ public class BLUCacheTrivialTest
     throws Failure,
       JCacheException
   {
-    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, BigInteger, Failure>> pair =
       this.newCache(8, 2);
-    final BLUCacheTrivial<String, BigInteger, Failure> cache =
+    final BLUCacheTrivial<String, BigInteger, BigInteger, Failure> cache =
       pair.getRight();
 
     final LUCacheLoaderFaultInjectable<String, BigInteger> loader =
@@ -93,9 +93,9 @@ public class BLUCacheTrivialTest
       throws Failure,
         JCacheException
   {
-    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, BigInteger, Failure>> pair =
       this.newCache(8, 2);
-    final BLUCacheTrivial<String, BigInteger, Failure> cache =
+    final BLUCacheTrivial<String, BigInteger, BigInteger, Failure> cache =
       pair.getRight();
 
     final LUCacheLoaderFaultInjectable<String, BigInteger> loader =
@@ -125,9 +125,9 @@ public class BLUCacheTrivialTest
     throws Failure,
       JCacheException
   {
-    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, BigInteger, Failure>> pair =
       this.newCache(8, 2);
-    final BLUCacheTrivial<String, BigInteger, Failure> cache =
+    final BLUCacheTrivial<String, BigInteger, BigInteger, Failure> cache =
       pair.getRight();
 
     final LUCacheLoaderFaultInjectable<String, BigInteger> loader =
@@ -156,9 +156,9 @@ public class BLUCacheTrivialTest
     throws Failure,
       JCacheException
   {
-    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, BigInteger, Failure>> pair =
       this.newCache(8, 2);
-    final BLUCacheTrivial<String, BigInteger, Failure> cache =
+    final BLUCacheTrivial<String, BigInteger, BigInteger, Failure> cache =
       pair.getRight();
 
     final LUCacheLoaderFaultInjectable<String, BigInteger> loader =
@@ -189,9 +189,9 @@ public class BLUCacheTrivialTest
       JCacheException
   {
     final int bound = 4;
-    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, BigInteger, Failure>> pair =
       this.newCache(bound, 2);
-    final BLUCacheTrivial<String, BigInteger, Failure> cache =
+    final BLUCacheTrivial<String, BigInteger, BigInteger, Failure> cache =
       pair.getRight();
 
     final JCacheEventsType<String, BigInteger> elog =
@@ -225,9 +225,9 @@ public class BLUCacheTrivialTest
       JCacheException
   {
     final int bound = 4;
-    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, BigInteger, Failure>> pair =
       this.newCache(bound, 2);
-    final BLUCacheTrivial<String, BigInteger, Failure> cache =
+    final BLUCacheTrivial<String, BigInteger, BigInteger, Failure> cache =
       pair.getRight();
 
     final EventLog<String, BigInteger> elog =
@@ -254,9 +254,9 @@ public class BLUCacheTrivialTest
       JCacheException
   {
     final int bound = 4;
-    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, BigInteger, Failure>> pair =
       this.newCache(bound, 2);
-    final BLUCacheTrivial<String, BigInteger, Failure> cache =
+    final BLUCacheTrivial<String, BigInteger, BigInteger, Failure> cache =
       pair.getRight();
 
     final LUCacheLoaderFaultInjectable<String, BigInteger> loader =
@@ -304,7 +304,7 @@ public class BLUCacheTrivialTest
       throws Failure,
         JCacheException
   {
-    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, BigInteger, Failure>> pair =
       this.newCache(8, 2);
 
     pair.getLeft().setFailure(false);
@@ -317,7 +317,7 @@ public class BLUCacheTrivialTest
     throws Failure,
       JCacheException
   {
-    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, BigInteger, Failure>> pair =
       this.newCache(8, 2);
 
     pair.getLeft().setFailure(true);
@@ -332,7 +332,7 @@ public class BLUCacheTrivialTest
       throws Failure,
         JCacheException
   {
-    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, BigInteger, Failure>> pair =
       this.newCache(8, 2);
 
     pair.getLeft().setFailure(false);
@@ -347,7 +347,7 @@ public class BLUCacheTrivialTest
       throws Failure,
         JCacheException
   {
-    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, BigInteger, Failure>> pair =
       this.newCache(8, 2);
 
     pair.getLeft().setFailure(false);
@@ -358,9 +358,9 @@ public class BLUCacheTrivialTest
 
   @Test public void testNew()
   {
-    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, BigInteger, Failure>> pair =
       this.newCache(8, 2);
-    final BLUCacheTrivial<String, BigInteger, Failure> cache =
+    final BLUCacheTrivial<String, BigInteger, BigInteger, Failure> cache =
       pair.getRight();
 
     Assert.assertEquals(BigInteger.ZERO, cache.cacheSize());
@@ -372,7 +372,7 @@ public class BLUCacheTrivialTest
       JCacheException
   {
     final int bound = 4;
-    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, BigInteger, Failure>> pair =
       this.newCache(bound, 2);
 
     final EventLog<String, BigInteger> elog =

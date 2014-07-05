@@ -32,19 +32,21 @@ package com.io7m.jcache;
  * accessed for a given number of periods will be evicted at the end of the
  * current period.
  * </p>
- * 
+ *
  * @param <K>
  *          The type of keys
- * @param <V>
- *          The type of cached values
+ * @param <TVIEW>
+ *          The type of cached values, as visible to users of the cache
+ * @param <TCACHE>
+ *          The type of cached values, as visible to cache implementations
  * @param <E>
  *          The type of exceptions raised during loading
  */
 
-public interface PCacheType<K, V, E extends Throwable> extends
+public interface PCacheType<K, TVIEW, TCACHE extends TVIEW, E extends Throwable> extends
   JCacheReadableType<K>,
   JCacheDeletableType,
-  JCacheEventsSubscriptionType<K, V>
+  JCacheEventsSubscriptionType<K, TCACHE>
 {
   /**
    * <p>
@@ -52,7 +54,7 @@ public interface PCacheType<K, V, E extends Throwable> extends
    * an error to call this method before calling {@link #cachePeriodStart()}
    * or after calling {@link #cachePeriodEnd()}.
    * </p>
-   * 
+   *
    * @throws E
    *           Iff the object named <code>key</code> raises an exception of
    *           type <code>E</code> upon loading.
@@ -65,14 +67,14 @@ public interface PCacheType<K, V, E extends Throwable> extends
    * @return The cached object
    */
 
-  V cacheGetPeriodic(
+  TVIEW cacheGetPeriodic(
     final K key)
     throws E,
       JCacheException;
 
   /**
    * End the current cache period.
-   * 
+   *
    * @see #cachePeriodStart()
    */
 
@@ -80,7 +82,7 @@ public interface PCacheType<K, V, E extends Throwable> extends
 
   /**
    * Begin a cache period.
-   * 
+   *
    * @see #cachePeriodEnd()
    */
 

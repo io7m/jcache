@@ -30,19 +30,21 @@ import com.io7m.jnull.Nullable;
 
 /**
  * A trivial implementation of the {@link PCacheType} interface.
- * 
+ *
  * @param <K>
  *          The type of keys
- * @param <V>
- *          The type of cached values
+ * @param <TVIEW>
+ *          The type of cached values, as visible to users of the cache
+ * @param <TCACHE>
+ *          The type of cached values, as visible to cache implementations
  * @param <E>
  *          The type of exceptions raised during loading
  */
 
-public final class PCacheTrivial<K, V, E extends Throwable> implements
-  PCacheType<K, V, E>
+public final class PCacheTrivial<K, TVIEW, TCACHE extends TVIEW, E extends Throwable> implements
+  PCacheType<K, TVIEW, TCACHE, E>
 {
-   private static final class CachedValue<V>
+  private static final class CachedValue<V>
   {
     private final BigInteger size;
     private final BigInteger time;
@@ -76,45 +78,50 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
 
   /**
    * Construct a new <tt>PCache</tt>.
-   * 
+   *
    * @param loader
    *          The class that will load instances when given keys
    * @param config
    *          The cache configuration
    * @return A new cache instance
-   * 
+   *
    * @param <K>
    *          The type of keys
-   * @param <V>
-   *          The type of cached values
+   * @param <TVIEW>
+   *          The type of cached values, as visible to users of the cache
+   * @param <TCACHE>
+   *          The type of cached values, as visible to cache implementations
    * @param <E>
    *          The type of exceptions raised by the loader
    */
 
-  public static <K, V, E extends Throwable> PCacheType<K, V, E> newCache(
-    final JCacheLoaderType<K, V, E> loader,
-    final PCacheConfig config)
+  public static
+    <K, TVIEW, TCACHE extends TVIEW, E extends Throwable>
+    PCacheType<K, TVIEW, TCACHE, E>
+    newCache(
+      final JCacheLoaderType<K, TCACHE, E> loader,
+      final PCacheConfig config)
   {
-    return new PCacheTrivial<K, V, E>(loader, config);
+    return new PCacheTrivial<K, TVIEW, TCACHE, E>(loader, config);
   }
 
   private final PCacheConfig                     config;
-  private @Nullable JCacheEventsType<K, V>       events;
+  private @Nullable JCacheEventsType<K, TCACHE>  events;
   private final Set<K>                           item_removals;
-  private final Map<K, CachedValue<V>>           items;
+  private final Map<K, CachedValue<TCACHE>>      items;
   private final NavigableMap<BigInteger, Set<K>> items_by_time;
-  private final JCacheLoaderType<K, V, E>        loader;
+  private final JCacheLoaderType<K, TCACHE, E>   loader;
   private boolean                                period;
   private BigInteger                             time;
   private BigInteger                             used;
 
   private PCacheTrivial(
-    final JCacheLoaderType<K, V, E> in_loader,
+    final JCacheLoaderType<K, TCACHE, E> in_loader,
     final PCacheConfig in_config)
   {
     this.loader = NullCheck.notNull(in_loader, "Loader");
     this.config = NullCheck.notNull(in_config, "Configuration");
-    this.items = new HashMap<K, CachedValue<V>>();
+    this.items = new HashMap<K, CachedValue<TCACHE>>();
     this.item_removals = new HashSet<K>();
     this.items_by_time = new TreeMap<BigInteger, Set<K>>();
     this.used = BigInteger.ZERO;
@@ -123,9 +130,9 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
     this.events = null;
   }
 
-  private CachedValue<V> cacheAdd(
+  private CachedValue<TCACHE> cacheAdd(
     final K key,
-    final V new_value,
+    final TCACHE new_value,
     final BigInteger size)
   {
     this.used = this.used.add(size);
@@ -139,7 +146,7 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
   }
 
   @Override public void cacheEventsSubscribe(
-    final JCacheEventsType<K, V> e)
+    final JCacheEventsType<K, TCACHE> e)
   {
     this.events = NullCheck.notNull(e, "Events");
   }
@@ -184,13 +191,13 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
     }
   }
 
-  private CachedValue<V> cacheGetAddingNew(
+  private CachedValue<TCACHE> cacheGetAddingNew(
     final K key)
     throws E,
       JCacheException
   {
     boolean failed = true;
-    V new_value = null;
+    TCACHE new_value = null;
 
     this.checkOverflow();
 
@@ -223,7 +230,7 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
     }
   }
 
-  @Override public V cacheGetPeriodic(
+  @Override public TCACHE cacheGetPeriodic(
     final K key)
     throws E,
       JCacheException
@@ -234,15 +241,15 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
       throw new IllegalStateException("Period is not in progress");
     }
 
-    final CachedValue<V> cv = this.pcCacheGetActual(key);
+    final CachedValue<TCACHE> cv = this.pcCacheGetActual(key);
     this.eventObjectRetrieved(key, cv);
     return cv.getValue();
   }
 
-  private CachedValue<V> cacheGetReplace(
+  private CachedValue<TCACHE> cacheGetReplace(
     final K key)
   {
-    final CachedValue<V> v = this.items.get(key);
+    final CachedValue<TCACHE> v = this.items.get(key);
     this.cacheTimeRemoveKey(key, v.getTime());
     return this.cachePut(key, v.getValue(), v.getSize());
   }
@@ -289,12 +296,13 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
     this.time = this.time.add(BigInteger.ONE);
   }
 
-  private CachedValue<V> cachePut(
+  private CachedValue<TCACHE> cachePut(
     final K key,
-    final V value,
+    final TCACHE value,
     final BigInteger size)
   {
-    final CachedValue<V> cv = new CachedValue<V>(value, this.time, size);
+    final CachedValue<TCACHE> cv =
+      new CachedValue<TCACHE>(value, this.time, size);
     this.items.put(key, cv);
 
     Set<K> keys;
@@ -311,7 +319,7 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
 
   private void cacheRemove(
     final K key,
-    final CachedValue<V> existing)
+    final CachedValue<TCACHE> existing)
   {
     this.eventObjectEvicted(key, existing);
     try {
@@ -345,7 +353,7 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
 
   private void checkLoaderReturnForNull(
     final K key,
-    final @Nullable V new_value)
+    final @Nullable TCACHE new_value)
     throws JCacheException
   {
     if (new_value == null) {
@@ -363,7 +371,7 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
 
   private void eventObjectCloseError(
     final K key,
-    final CachedValue<V> existing,
+    final CachedValue<TCACHE> existing,
     final Throwable x)
   {
     if (this.events != null) {
@@ -381,7 +389,7 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
 
   private void eventObjectEvicted(
     final K key,
-    final CachedValue<V> existing)
+    final CachedValue<TCACHE> existing)
   {
     if (this.events != null) {
       try {
@@ -397,7 +405,7 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
 
   private void eventObjectLoaded(
     final K key,
-    final V new_value,
+    final TCACHE new_value,
     final BigInteger size)
   {
     if (this.events != null) {
@@ -411,7 +419,7 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
 
   private void eventObjectRetrieved(
     final K key,
-    final CachedValue<V> cv)
+    final CachedValue<TCACHE> cv)
   {
     if (this.events != null) {
       try {
@@ -423,7 +431,7 @@ public final class PCacheTrivial<K, V, E extends Throwable> implements
     }
   }
 
-  private CachedValue<V> pcCacheGetActual(
+  private CachedValue<TCACHE> pcCacheGetActual(
     final K key)
     throws E,
       JCacheException

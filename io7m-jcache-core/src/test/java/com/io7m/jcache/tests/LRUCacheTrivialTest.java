@@ -1,10 +1,10 @@
 /*
  * Copyright © 2014 <code@io7m.com> http://io7m.com
- * 
+ *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
  * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
@@ -36,8 +36,8 @@ import com.io7m.jnull.NullCheckException;
 @SuppressWarnings("static-method") public final class LRUCacheTrivialTest
 {
   private
-    <K, V>
-    Pair<LUCacheLoaderFaultInjectable<K, V>, LRUCacheTrivial<K, V, Failure>>
+    <K, TVIEW, TCACHE extends TVIEW>
+    Pair<LUCacheLoaderFaultInjectable<K, TCACHE>, LRUCacheTrivial<K, TVIEW, TCACHE, Failure>>
     newCache(
       final long capacity)
   {
@@ -45,16 +45,16 @@ import com.io7m.jnull.NullCheckException;
       LRUCacheConfig
         .empty()
         .withMaximumCapacity(BigInteger.valueOf(capacity));
-    final LUCacheLoaderFaultInjectable<K, V> loader =
-      new LUCacheLoaderFaultInjectable<K, V>();
-    final LRUCacheTrivial<K, V, Failure> cache =
+    final LUCacheLoaderFaultInjectable<K, TCACHE> loader =
+      new LUCacheLoaderFaultInjectable<K, TCACHE>();
+    final LRUCacheTrivial<K, TVIEW, TCACHE, Failure> cache =
       LRUCacheTrivial.newCache(loader, config);
     return Pair.pair(loader, cache);
   }
 
   /**
    * Clearing a cache deletes all of the items.
-   * 
+   *
    * @throws JCacheException
    */
 
@@ -62,7 +62,7 @@ import com.io7m.jnull.NullCheckException;
     throws Failure,
       JCacheException
   {
-    final Pair<LUCacheLoaderFaultInjectable<String, Long>, LRUCacheTrivial<String, Long, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<String, Long>, LRUCacheTrivial<String, Long, Long, Failure>> pair =
       this.newCache(8L);
 
     final EventCount<String, Long> ec = new EventCount<String, Long>();
@@ -95,7 +95,7 @@ import com.io7m.jnull.NullCheckException;
 
   /**
    * Events are delivered.
-   * 
+   *
    * @throws JCacheException
    */
 
@@ -103,7 +103,7 @@ import com.io7m.jnull.NullCheckException;
     throws Failure,
       JCacheException
   {
-    final Pair<LUCacheLoaderFaultInjectable<String, Long>, LRUCacheTrivial<String, Long, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<String, Long>, LRUCacheTrivial<String, Long, Long, Failure>> pair =
       this.newCache(2L);
 
     final EventLog<String, Long> ev = new EventLog<String, Long>();
@@ -181,7 +181,7 @@ import com.io7m.jnull.NullCheckException;
 
   /**
    * Exceptions raised during closing are delivered.
-   * 
+   *
    * @throws JCacheException
    */
 
@@ -189,7 +189,7 @@ import com.io7m.jnull.NullCheckException;
     throws Failure,
       JCacheException
   {
-    final Pair<LUCacheLoaderFaultInjectable<String, Long>, LRUCacheTrivial<String, Long, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<String, Long>, LRUCacheTrivial<String, Long, Long, Failure>> pair =
       this.newCache(1L);
 
     final EventLog<String, Long> ev = new EventLog<String, Long>();
@@ -222,7 +222,7 @@ import com.io7m.jnull.NullCheckException;
 
   /**
    * Exceptions are not propagated.
-   * 
+   *
    * @throws JCacheException
    */
 
@@ -230,7 +230,7 @@ import com.io7m.jnull.NullCheckException;
     throws Failure,
       JCacheException
   {
-    final Pair<LUCacheLoaderFaultInjectable<String, Long>, LRUCacheTrivial<String, Long, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<String, Long>, LRUCacheTrivial<String, Long, Long, Failure>> pair =
       this.newCache(2L);
 
     pair.getRight().cacheEventsSubscribe(new EventThrown<String, Long>());
@@ -265,14 +265,14 @@ import com.io7m.jnull.NullCheckException;
 
   /**
    * Trying to subscribe with TestUtilities.actuallyNull() fails.
-   * 
+   *
    * @throws JCacheException
    */
 
   @Test(expected = NullCheckException.class) public void testEventsNull()
     throws JCacheException
   {
-    final Pair<LUCacheLoaderFaultInjectable<String, Long>, LRUCacheTrivial<String, Long, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<String, Long>, LRUCacheTrivial<String, Long, Long, Failure>> pair =
       this.newCache(2L);
     pair.getRight().cacheEventsSubscribe(
       (JCacheEventsType<String, Long>) TestUtilities.actuallyNull());
@@ -280,7 +280,7 @@ import com.io7m.jnull.NullCheckException;
 
   /**
    * Caching items evicts the oldest items first.
-   * 
+   *
    * @throws JCacheException
    */
 
@@ -288,7 +288,7 @@ import com.io7m.jnull.NullCheckException;
     throws Failure,
       JCacheException
   {
-    final Pair<LUCacheLoaderFaultInjectable<String, Long>, LRUCacheTrivial<String, Long, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<String, Long>, LRUCacheTrivial<String, Long, Long, Failure>> pair =
       this.newCache(2L);
 
     pair.getLeft().setFailure(false);
@@ -332,7 +332,7 @@ import com.io7m.jnull.NullCheckException;
 
   /**
    * A cache of size 1 can hold one object of size 1.
-   * 
+   *
    * @throws JCacheException
    */
 
@@ -340,7 +340,7 @@ import com.io7m.jnull.NullCheckException;
     throws Failure,
       JCacheException
   {
-    final Pair<LUCacheLoaderFaultInjectable<String, Long>, LRUCacheTrivial<String, Long, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<String, Long>, LRUCacheTrivial<String, Long, Long, Failure>> pair =
       this.newCache(1L);
 
     final EventLog<String, Long> ev = new EventLog<String, Long>();
@@ -381,7 +381,8 @@ import com.io7m.jnull.NullCheckException;
 
   @Test(expected = NullCheckException.class) public void testIsCachedNull()
   {
-    LRUCacheTrivial<Long, Long, Failure> cache = TestUtilities.actuallyNull();
+    LRUCacheTrivial<Long, Long, Long, Failure> cache =
+      TestUtilities.actuallyNull();
 
     try {
       final LRUCacheConfig config = LRUCacheConfig.empty();
@@ -405,7 +406,7 @@ import com.io7m.jnull.NullCheckException;
     throws Failure,
       JCacheException
   {
-    final Pair<LUCacheLoaderFaultInjectable<Long, Long>, LRUCacheTrivial<Long, Long, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<Long, Long>, LRUCacheTrivial<Long, Long, Long, Failure>> pair =
       this.newCache(32L);
 
     pair.getLeft().setFailure(true);
@@ -416,7 +417,7 @@ import com.io7m.jnull.NullCheckException;
 
   /**
    * A loader returning an object that cannot fit in the cache is an error.
-   * 
+   *
    * @throws JCacheException
    */
 
@@ -426,7 +427,7 @@ import com.io7m.jnull.NullCheckException;
       throws Failure,
         JCacheException
   {
-    final Pair<LUCacheLoaderFaultInjectable<Long, Long>, LRUCacheTrivial<Long, Long, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<Long, Long>, LRUCacheTrivial<Long, Long, Long, Failure>> pair =
       this.newCache(32L);
 
     pair.getLeft().setFailure(false);
@@ -437,7 +438,7 @@ import com.io7m.jnull.NullCheckException;
 
   /**
    * A loader returning a negative size is a cache error.
-   * 
+   *
    * @throws JCacheException
    */
 
@@ -447,7 +448,7 @@ import com.io7m.jnull.NullCheckException;
       throws Failure,
         JCacheException
   {
-    final Pair<LUCacheLoaderFaultInjectable<Long, Long>, LRUCacheTrivial<Long, Long, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<Long, Long>, LRUCacheTrivial<Long, Long, Long, Failure>> pair =
       this.newCache(32L);
 
     pair.getLeft().setFailure(false);
@@ -459,7 +460,7 @@ import com.io7m.jnull.NullCheckException;
   /**
    * A loader returning <code>TestUtilities.actuallyNull()</code> is a cache
    * error.
-   * 
+   *
    * @throws JCacheException
    */
 
@@ -469,7 +470,7 @@ import com.io7m.jnull.NullCheckException;
       throws Failure,
         JCacheException
   {
-    final Pair<LUCacheLoaderFaultInjectable<Long, Long>, LRUCacheTrivial<Long, Long, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<Long, Long>, LRUCacheTrivial<Long, Long, Long, Failure>> pair =
       this.newCache(32L);
 
     pair.getLeft().setFailure(false);
@@ -485,7 +486,7 @@ import com.io7m.jnull.NullCheckException;
   @Test public void testNew()
   {
     final LRUCacheConfig config = LRUCacheConfig.empty();
-    final LRUCacheTrivial<Long, Long, Failure> cache =
+    final LRUCacheTrivial<Long, Long, Long, Failure> cache =
       LRUCacheTrivial.newCache(
         new LUCacheLoaderFaultInjectable<Long, Long>(),
         config);
@@ -534,7 +535,7 @@ import com.io7m.jnull.NullCheckException;
     throws Failure,
       JCacheException
   {
-    final Pair<LUCacheLoaderFaultInjectable<String, Long>, LRUCacheTrivial<String, Long, Failure>> pair =
+    final Pair<LUCacheLoaderFaultInjectable<String, Long>, LRUCacheTrivial<String, Long, Long, Failure>> pair =
       this.newCache(32L);
 
     final String s0 = pair.getRight().toString();

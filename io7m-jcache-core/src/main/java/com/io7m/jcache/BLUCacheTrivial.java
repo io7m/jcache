@@ -34,19 +34,21 @@ import com.io7m.junreachable.UnreachableCodeException;
 /**
  * A trivial implementation of a borrowing LRU cache; the oldest
  * non-<i>borrowed</i> objects are evicted from the cache first.
- * 
+ *
  * @param <K>
  *          The type of keys
- * @param <V>
- *          The type of cached values
+ * @param <TVIEW>
+ *          The type of cached values, as visible to users of the cache
+ * @param <TCACHE>
+ *          The type of cached values, as visible to cache implementations
  * @param <E>
  *          The type of exceptions raised during loading
  */
 
-public final class BLUCacheTrivial<K, V, E extends Throwable> implements
-  BLUCacheType<K, V, E>
+public final class BLUCacheTrivial<K, TVIEW, TCACHE extends TVIEW, E extends Throwable> implements
+  BLUCacheType<K, TVIEW, TCACHE, E>
 {
-   private static final class CachedValue<V>
+  private static final class CachedValue<V>
   {
     private final BigInteger size;
     private final V          value;
@@ -70,7 +72,7 @@ public final class BLUCacheTrivial<K, V, E extends Throwable> implements
     }
   }
 
-   private static final class ExtendedKey<K>
+  private static final class ExtendedKey<K>
   {
     private final K          key;
     private final BigInteger serial;
@@ -130,16 +132,16 @@ public final class BLUCacheTrivial<K, V, E extends Throwable> implements
     }
   }
 
-  private final class Receipt implements BLUCacheReceiptType<K, V>
+  private final class Receipt implements BLUCacheReceiptType<K, TVIEW>
   {
     private final ExtendedKey<K> key;
     private final BigInteger     size;
     private boolean              valid;
-    private final V              value;
+    private final TCACHE         value;
 
     Receipt(
       final ExtendedKey<K> in_key,
-      final V in_value,
+      final TCACHE in_value,
       final BigInteger in_size)
     {
       this.key = in_key;
@@ -182,7 +184,7 @@ public final class BLUCacheTrivial<K, V, E extends Throwable> implements
       return this.size;
     }
 
-    @Override public V getValue()
+    @Override public TVIEW getValue()
     {
       return this.value;
     }
@@ -229,50 +231,52 @@ public final class BLUCacheTrivial<K, V, E extends Throwable> implements
 
   /**
    * Construct a new <tt>BRUCache</tt>.
-   * 
+   *
    * @param loader
    *          The class that will load instances when given keys
    * @param config
    *          The cache configuration
    * @return A new cache instance
-   * 
+   *
    * @param <K>
    *          The type of keys
-   * @param <V>
-   *          The type of cached values
+   * @param <TVIEW>
+   *          The type of cached values, as visible to users of the cache
+   * @param <TCACHE>
+   *          The type of cached values, as visible to cache implementations
    * @param <E>
    *          The type of exceptions raised by the loader
    */
 
   public static
-    <K, V, E extends Throwable>
-    BLUCacheTrivial<K, V, E>
+    <K, TVIEW, TCACHE extends TVIEW, E extends Throwable>
+    BLUCacheTrivial<K, TVIEW, TCACHE, E>
     newCache(
-      final JCacheLoaderType<K, V, E> loader,
+      final JCacheLoaderType<K, TCACHE, E> loader,
       final BLUCacheConfig config)
   {
-    return new BLUCacheTrivial<K, V, E>(loader, config);
+    return new BLUCacheTrivial<K, TVIEW, TCACHE, E>(loader, config);
   }
 
   private final BLUCacheConfig                           config;
-  private @Nullable JCacheEventsType<K, V>               events;
+  private @Nullable JCacheEventsType<K, TCACHE>          events;
   private BigInteger                                     gets;
-  private final Map<ExtendedKey<K>, CachedValue<V>>      items;
+  private final Map<ExtendedKey<K>, CachedValue<TCACHE>> items;
   private final Map<K, NavigableSet<BigInteger>>         items_available;
   private final Map<K, NavigableSet<BigInteger>>         items_borrowed;
   private final NavigableMap<BigInteger, ExtendedKey<K>> items_timed;
-  private final JCacheLoaderType<K, V, E>                loader;
+  private final JCacheLoaderType<K, TCACHE, E>           loader;
   private BigInteger                                     used;
 
   private BLUCacheTrivial(
-    final JCacheLoaderType<K, V, E> in_loader,
+    final JCacheLoaderType<K, TCACHE, E> in_loader,
     final BLUCacheConfig in_config)
   {
     this.loader = NullCheck.notNull(in_loader, "Loader");
     this.config = NullCheck.notNull(in_config, "Configuration");
 
     this.events = null;
-    this.items = new HashMap<ExtendedKey<K>, CachedValue<V>>();
+    this.items = new HashMap<ExtendedKey<K>, CachedValue<TCACHE>>();
     this.items_borrowed = new HashMap<K, NavigableSet<BigInteger>>();
     this.items_available = new HashMap<K, NavigableSet<BigInteger>>();
     this.items_timed = new TreeMap<BigInteger, ExtendedKey<K>>();
@@ -321,7 +325,7 @@ public final class BLUCacheTrivial<K, V, E extends Throwable> implements
   @Override public void cacheDelete()
   {
     for (final ExtendedKey<K> k : this.items.keySet()) {
-      final CachedValue<V> v = this.items.get(k);
+      final CachedValue<TCACHE> v = this.items.get(k);
       this.cacheValueDelete(k, v);
     }
 
@@ -334,7 +338,7 @@ public final class BLUCacheTrivial<K, V, E extends Throwable> implements
   }
 
   @Override public void cacheEventsSubscribe(
-    final JCacheEventsType<K, V> e)
+    final JCacheEventsType<K, TCACHE> e)
   {
     this.events = NullCheck.notNull(e, "Events");
   }
@@ -373,7 +377,7 @@ public final class BLUCacheTrivial<K, V, E extends Throwable> implements
           key.getKey(),
           key.getSerial());
 
-        final CachedValue<V> existing = this.items.get(key);
+        final CachedValue<TCACHE> existing = this.items.get(key);
         this.cacheValueDelete(key, existing);
         this.cacheSizeDecrease(existing.getSize());
         this.items.remove(key);
@@ -435,7 +439,7 @@ public final class BLUCacheTrivial<K, V, E extends Throwable> implements
     assert this.items_available.containsKey(key) == false;
 
     boolean failed = true;
-    V new_value = null;
+    TCACHE new_value = null;
 
     this.cacheCheckBorrowingLimit(key);
     this.cacheCheckOverflow();
@@ -557,10 +561,10 @@ public final class BLUCacheTrivial<K, V, E extends Throwable> implements
 
   private Receipt cachePut(
     final ExtendedKey<K> ext_key,
-    final V new_value,
+    final TCACHE new_value,
     final BigInteger size)
   {
-    final CachedValue<V> cv = new CachedValue<V>(new_value, size);
+    final CachedValue<TCACHE> cv = new CachedValue<TCACHE>(new_value, size);
     this.items.put(ext_key, cv);
     this.cacheMarkBorrowed(ext_key);
     this.cacheKeyTimeTouch(this.gets, ext_key);
@@ -569,7 +573,7 @@ public final class BLUCacheTrivial<K, V, E extends Throwable> implements
 
   private Receipt cachePutAddNew(
     final K key,
-    final V new_value,
+    final TCACHE new_value,
     final BigInteger size)
   {
     this.cacheSizeIncrease(size);
@@ -587,9 +591,9 @@ public final class BLUCacheTrivial<K, V, E extends Throwable> implements
     final ExtendedKey<K> ext_key = new ExtendedKey<K>(key, first_available);
 
     assert this.items.containsKey(ext_key);
-    final CachedValue<V> old_value = this.items.get(ext_key);
+    final CachedValue<TCACHE> old_value = this.items.get(ext_key);
 
-    final V v = old_value.getValue();
+    final TCACHE v = old_value.getValue();
     final BigInteger s = old_value.getSize();
     this.cacheIncrementGets();
     final Receipt receipt = this.cachePut(ext_key, v, s);
@@ -642,7 +646,7 @@ public final class BLUCacheTrivial<K, V, E extends Throwable> implements
 
   private void cacheValueDelete(
     final ExtendedKey<K> key,
-    final CachedValue<V> existing)
+    final CachedValue<TCACHE> existing)
   {
     this.eventObjectEvicted(key.getKey(), existing);
     try {
@@ -654,7 +658,7 @@ public final class BLUCacheTrivial<K, V, E extends Throwable> implements
 
   private void checkLoaderReturnForNull(
     final K key,
-    final @Nullable V new_value)
+    final @Nullable TCACHE new_value)
     throws JCacheException
   {
     if (new_value == null) {
@@ -664,7 +668,7 @@ public final class BLUCacheTrivial<K, V, E extends Throwable> implements
 
   private void eventObjectCloseError(
     final K key,
-    final CachedValue<V> existing,
+    final CachedValue<TCACHE> existing,
     final Throwable x)
   {
     if (this.events != null) {
@@ -682,7 +686,7 @@ public final class BLUCacheTrivial<K, V, E extends Throwable> implements
 
   private void eventObjectEvicted(
     final K key,
-    final CachedValue<V> existing)
+    final CachedValue<TCACHE> existing)
   {
     if (this.events != null) {
       try {
@@ -698,7 +702,7 @@ public final class BLUCacheTrivial<K, V, E extends Throwable> implements
 
   private void eventObjectLoaded(
     final K key,
-    final V new_value,
+    final TCACHE new_value,
     final BigInteger size)
   {
     if (this.events != null) {
@@ -718,7 +722,7 @@ public final class BLUCacheTrivial<K, V, E extends Throwable> implements
       try {
         this.events.cacheEventValueRetrieved(
           key,
-          receipt.getValue(),
+          receipt.value,
           receipt.getSize());
       } catch (final Throwable _) {
         // Ignore

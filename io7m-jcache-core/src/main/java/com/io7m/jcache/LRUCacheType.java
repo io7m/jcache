@@ -18,17 +18,19 @@ package com.io7m.jcache;
 
 /**
  * The type of mutable least-recently-used caches.
- * 
+ *
  * @param <K>
  *          The type of keys
- * @param <V>
- *          The type of cached values
+ * @param <TVIEW>
+ *          The type of cached values, as visible to users of the cache
+ * @param <TCACHE>
+ *          The type of cached values, as visible to cache implementations
  * @param <E>
  *          The type of exceptions raised during loading
  */
 
-public interface LRUCacheType<K, V, E extends Throwable> extends
-  LUCacheType<K, V, E>
+public interface LRUCacheType<K, TVIEW, TCACHE extends TVIEW, E extends Throwable> extends
+  LUCacheType<K, TVIEW, TCACHE, E>
 {
   /**
    * @return The configuration for the cache.

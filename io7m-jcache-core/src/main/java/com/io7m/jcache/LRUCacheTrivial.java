@@ -29,17 +29,19 @@ import com.io7m.jnull.Nullable;
 /**
  * A mindlessly simple LRU cache; the oldest objects are evicted from the
  * cache first.
- * 
+ *
  * @param <K>
  *          The type of keys
- * @param <V>
- *          The type of cached values
+ * @param <TVIEW>
+ *          The type of cached values, as visible to users of the cache
+ * @param <TCACHE>
+ *          The type of cached values, as visible to cache implementations
  * @param <E>
  *          The type of exceptions raised during loading
  */
 
-public final class LRUCacheTrivial<K, V, E extends Throwable> implements
-  LRUCacheType<K, V, E>
+public final class LRUCacheTrivial<K, TVIEW, TCACHE extends TVIEW, E extends Throwable> implements
+  LRUCacheType<K, TVIEW, TCACHE, E>
 {
   private static final class CachedValue<V>
   {
@@ -75,55 +77,57 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
 
   /**
    * Construct a new <tt>LRUCache</tt>.
-   * 
+   *
    * @param loader
    *          The class that will load instances when given keys
    * @param config
    *          The cache configuration
    * @return A new cache instance
-   * 
+   *
    * @param <K>
    *          The type of keys
-   * @param <V>
-   *          The type of cached values
+   * @param <TVIEW>
+   *          The type of cached values, as visible to users of the cache
+   * @param <TCACHE>
+   *          The type of cached values, as visible to cache implementations
    * @param <E>
    *          The type of exceptions raised by the loader
    */
 
   public static
-    <K, V, E extends Throwable>
-    LRUCacheTrivial<K, V, E>
+    <K, TVIEW, TCACHE extends TVIEW, E extends Throwable>
+    LRUCacheTrivial<K, TVIEW, TCACHE, E>
     newCache(
-      final JCacheLoaderType<K, V, E> loader,
+      final JCacheLoaderType<K, TCACHE, E> loader,
       final LRUCacheConfig config)
   {
-    return new LRUCacheTrivial<K, V, E>(loader, config);
+    return new LRUCacheTrivial<K, TVIEW, TCACHE, E>(loader, config);
   }
 
-  private final LRUCacheConfig              config;
-  private @Nullable JCacheEventsType<K, V>  events;
-  private BigInteger                        gets;
-  private final Map<K, CachedValue<V>>      items;
-  private final JCacheLoaderType<K, V, E>   loader;
-  private final NavigableMap<BigInteger, K> time_items;
-  private BigInteger                        used;
+  private final LRUCacheConfig                  config;
+  private @Nullable JCacheEventsType<K, TCACHE> events;
+  private BigInteger                            gets;
+  private final Map<K, CachedValue<TCACHE>>     items;
+  private final JCacheLoaderType<K, TCACHE, E>  loader;
+  private final NavigableMap<BigInteger, K>     time_items;
+  private BigInteger                            used;
 
   private LRUCacheTrivial(
-    final JCacheLoaderType<K, V, E> in_loader,
+    final JCacheLoaderType<K, TCACHE, E> in_loader,
     final LRUCacheConfig in_config)
   {
     this.loader = NullCheck.notNull(in_loader, "Loader");
     this.config = NullCheck.notNull(in_config, "Configuration");
-    this.items = new HashMap<K, CachedValue<V>>();
+    this.items = new HashMap<K, CachedValue<TCACHE>>();
     this.time_items = new TreeMap<BigInteger, K>();
     this.used = BigInteger.ZERO;
     this.gets = BigInteger.ZERO;
     this.events = null;
   }
 
-  private CachedValue<V> cacheAdd(
+  private CachedValue<TCACHE> cacheAdd(
     final K key,
-    final V new_value,
+    final TCACHE new_value,
     final BigInteger size)
   {
     this.used = this.used.add(size);
@@ -149,7 +153,7 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
   }
 
   @Override public void cacheEventsSubscribe(
-    final JCacheEventsType<K, V> e)
+    final JCacheEventsType<K, TCACHE> e)
   {
     this.events = NullCheck.notNull(e, "Events");
   }
@@ -163,7 +167,7 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
   {
     final Entry<BigInteger, K> eleast = this.time_items.firstEntry();
     assert eleast != null;
-    final CachedValue<V> old_cached = this.items.get(eleast.getValue());
+    final CachedValue<TCACHE> old_cached = this.items.get(eleast.getValue());
     this.cacheRemove(eleast.getValue(), old_cached);
   }
 
@@ -190,7 +194,7 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
     assert current.compareTo(maximum) <= 0;
   }
 
-  private CachedValue<V> cacheGetActual(
+  private CachedValue<TCACHE> cacheGetActual(
     final K key)
     throws E,
       JCacheException
@@ -202,13 +206,13 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
     return this.cacheGetAddingNew(key);
   }
 
-  private CachedValue<V> cacheGetAddingNew(
+  private CachedValue<TCACHE> cacheGetAddingNew(
     final K key)
     throws E,
       JCacheException
   {
     boolean failed = true;
-    V new_value = null;
+    TCACHE new_value = null;
 
     this.cacheCheckOverflow();
 
@@ -241,22 +245,22 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
     }
   }
 
-  @Override public V cacheGetLU(
+  @Override public TVIEW cacheGetLU(
     final K key)
     throws E,
       JCacheException
   {
     NullCheck.notNull(key, "Key");
 
-    final CachedValue<V> cv = this.cacheGetActual(key);
+    final CachedValue<TCACHE> cv = this.cacheGetActual(key);
     this.eventObjectRetrieved(key, cv);
     return cv.getValue();
   }
 
-  private CachedValue<V> cacheGetReplace(
+  private CachedValue<TCACHE> cacheGetReplace(
     final K key)
   {
-    final CachedValue<V> v = this.items.get(key);
+    final CachedValue<TCACHE> v = this.items.get(key);
     this.time_items.remove(v.getTime());
     return this.cachePut(key, v.getValue(), v.getSize());
   }
@@ -277,13 +281,14 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
     return BigInteger.valueOf(this.items.size());
   }
 
-  private CachedValue<V> cachePut(
+  private CachedValue<TCACHE> cachePut(
     final K key,
-    final V new_value,
+    final TCACHE new_value,
     final BigInteger size)
   {
     this.cacheIncrementGets();
-    final CachedValue<V> cv = new CachedValue<V>(new_value, this.gets, size);
+    final CachedValue<TCACHE> cv =
+      new CachedValue<TCACHE>(new_value, this.gets, size);
     this.items.put(key, cv);
     this.time_items.put(this.gets, key);
     return cv;
@@ -291,7 +296,7 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
 
   private void cacheRemove(
     final K key,
-    final CachedValue<V> existing)
+    final CachedValue<TCACHE> existing)
   {
     this.eventObjectEvicted(key, existing);
     try {
@@ -311,7 +316,7 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
 
   private void checkLoaderReturnForNull(
     final K key,
-    final @Nullable V new_value)
+    final @Nullable TCACHE new_value)
     throws JCacheException
   {
     if (new_value == null) {
@@ -321,7 +326,7 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
 
   private void eventObjectCloseError(
     final K key,
-    final CachedValue<V> existing,
+    final CachedValue<TCACHE> existing,
     final Throwable x)
   {
     if (this.events != null) {
@@ -339,7 +344,7 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
 
   private void eventObjectEvicted(
     final K key,
-    final CachedValue<V> existing)
+    final CachedValue<TCACHE> existing)
   {
     if (this.events != null) {
       try {
@@ -355,7 +360,7 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
 
   private void eventObjectLoaded(
     final K key,
-    final V new_value,
+    final TCACHE new_value,
     final BigInteger size)
   {
     if (this.events != null) {
@@ -369,7 +374,7 @@ public final class LRUCacheTrivial<K, V, E extends Throwable> implements
 
   private void eventObjectRetrieved(
     final K key,
-    final CachedValue<V> cv)
+    final CachedValue<TCACHE> cv)
   {
     if (this.events != null) {
       try {

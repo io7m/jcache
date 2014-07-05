@@ -1,10 +1,10 @@
 /*
  * Copyright © 2014 <code@io7m.com> http://io7m.com
- * 
+ *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
  * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
@@ -40,9 +40,9 @@ import com.io7m.junreachable.UnreachableCodeException;
 
 @SuppressWarnings("static-method") public final class PCacheTrivialTest
 {
-  private PCacheType<Integer, Integer, Failure> newCache()
+  private PCacheType<Integer, Integer, Integer, Failure> newCache()
   {
-    PCacheType<Integer, Integer, Failure> pc;
+    PCacheType<Integer, Integer, Integer, Failure> pc;
     PCacheConfig c;
     final BuilderType b = PCacheConfig.newBuilder();
     c = b.create();
@@ -53,11 +53,11 @@ import com.io7m.junreachable.UnreachableCodeException;
   }
 
   private
-    Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>>
+    Pair<PCacheType<String, Integer, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>>
     newCacheWithMaximumAge(
       final long age)
   {
-    PCacheType<String, Integer, Failure> pc;
+    PCacheType<String, Integer, Integer, Failure> pc;
     PCacheConfig c;
     final BuilderType b = PCacheConfig.newBuilder();
     b.setMaximumAge(BigInteger.valueOf(age));
@@ -70,11 +70,11 @@ import com.io7m.junreachable.UnreachableCodeException;
   }
 
   private
-    Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>>
+    Pair<PCacheType<String, Integer, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>>
     newCacheWithMaximumSize(
       final long size)
   {
-    PCacheType<String, Integer, Failure> pc;
+    PCacheType<String, Integer, Integer, Failure> pc;
     PCacheConfig c;
     final BuilderType b = PCacheConfig.newBuilder();
     b.setNoMaximumAge();
@@ -88,7 +88,7 @@ import com.io7m.junreachable.UnreachableCodeException;
 
   /**
    * Events are delivered.
-   * 
+   *
    * @throws JCacheException
    */
 
@@ -96,7 +96,7 @@ import com.io7m.junreachable.UnreachableCodeException;
     throws Failure,
       JCacheException
   {
-    final Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
+    final Pair<PCacheType<String, Integer, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(2);
 
     final EventLog<String, Integer> ev = new EventLog<String, Integer>();
@@ -172,7 +172,7 @@ import com.io7m.junreachable.UnreachableCodeException;
 
   /**
    * Exceptions raised during closing are delivered.
-   * 
+   *
    * @throws JCacheException
    */
 
@@ -180,7 +180,7 @@ import com.io7m.junreachable.UnreachableCodeException;
     throws Failure,
       JCacheException
   {
-    final Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
+    final Pair<PCacheType<String, Integer, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(1);
 
     final EventLog<String, Integer> ev = new EventLog<String, Integer>();
@@ -212,7 +212,7 @@ import com.io7m.junreachable.UnreachableCodeException;
 
   /**
    * Exceptions are not propagated.
-   * 
+   *
    * @throws JCacheException
    */
 
@@ -220,7 +220,7 @@ import com.io7m.junreachable.UnreachableCodeException;
     throws Failure,
       JCacheException
   {
-    final Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
+    final Pair<PCacheType<String, Integer, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(2);
 
     pair.getLeft().cachePeriodStart();
@@ -256,14 +256,14 @@ import com.io7m.junreachable.UnreachableCodeException;
 
   /**
    * Trying to subscribe with TestUtilities.actuallyNull() fails.
-   * 
+   *
    * @throws JCacheException
    */
 
   @Test(expected = NullCheckException.class) public void testEventsNull()
     throws JCacheException
   {
-    final Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
+    final Pair<PCacheType<String, Integer, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(2L);
     pair.getLeft().cacheEventsSubscribe(
       (JCacheEventsType<String, Integer>) TestUtilities.actuallyNull());
@@ -273,7 +273,7 @@ import com.io7m.junreachable.UnreachableCodeException;
     throws Failure,
       JCacheException
   {
-    final Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> p =
+    final Pair<PCacheType<String, Integer, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> p =
       this.newCacheWithMaximumAge(2);
 
     p.getLeft().cacheEventsSubscribe(new EventLog<String, Integer>());
@@ -313,7 +313,7 @@ import com.io7m.junreachable.UnreachableCodeException;
     throws Failure,
       JCacheException
   {
-    final Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> p =
+    final Pair<PCacheType<String, Integer, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> p =
       this.newCacheWithMaximumSize(10);
 
     p.getLeft().cacheEventsSubscribe(new EventLog<String, Integer>());
@@ -365,7 +365,8 @@ import com.io7m.junreachable.UnreachableCodeException;
     throws Failure,
       JCacheException
   {
-    PCacheType<Integer, Integer, Failure> pc = TestUtilities.actuallyNull();
+    PCacheType<Integer, Integer, Integer, Failure> pc =
+      TestUtilities.actuallyNull();
 
     pc = this.newCache();
     assert pc != TestUtilities.actuallyNull();
@@ -376,7 +377,8 @@ import com.io7m.junreachable.UnreachableCodeException;
     throws Failure,
       JCacheException
   {
-    PCacheType<Integer, Integer, Failure> pc = TestUtilities.actuallyNull();
+    PCacheType<Integer, Integer, Integer, Failure> pc =
+      TestUtilities.actuallyNull();
 
     pc = this.newCache();
     assert pc != TestUtilities.actuallyNull();
@@ -389,7 +391,8 @@ import com.io7m.junreachable.UnreachableCodeException;
 
   @Test(expected = NullCheckException.class) public void testIsCachedNull()
   {
-    LRUCacheTrivial<Long, Long, Failure> cache = TestUtilities.actuallyNull();
+    LRUCacheTrivial<Long, Long, Long, Failure> cache =
+      TestUtilities.actuallyNull();
 
     try {
       final LRUCacheConfig config = LRUCacheConfig.empty();
@@ -413,7 +416,7 @@ import com.io7m.junreachable.UnreachableCodeException;
     throws Failure,
       JCacheException
   {
-    final Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
+    final Pair<PCacheType<String, Integer, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(32L);
 
     pair.getRight().setFailure(true);
@@ -425,7 +428,7 @@ import com.io7m.junreachable.UnreachableCodeException;
 
   /**
    * A loader returning an object that cannot fit in the cache is an error.
-   * 
+   *
    * @throws JCacheException
    */
 
@@ -435,7 +438,7 @@ import com.io7m.junreachable.UnreachableCodeException;
       throws Failure,
         JCacheException
   {
-    final Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
+    final Pair<PCacheType<String, Integer, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumSize(32L);
 
     pair.getRight().setFailure(false);
@@ -447,7 +450,7 @@ import com.io7m.junreachable.UnreachableCodeException;
 
   /**
    * A loader returning a negative size is a cache error.
-   * 
+   *
    * @throws JCacheException
    */
 
@@ -457,7 +460,7 @@ import com.io7m.junreachable.UnreachableCodeException;
       throws Failure,
         JCacheException
   {
-    final Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
+    final Pair<PCacheType<String, Integer, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(32L);
 
     pair.getRight().setFailure(false);
@@ -470,7 +473,7 @@ import com.io7m.junreachable.UnreachableCodeException;
   /**
    * A loader returning <code>TestUtilities.actuallyNull()</code> is a cache
    * error.
-   * 
+   *
    * @throws JCacheException
    */
 
@@ -480,7 +483,7 @@ import com.io7m.junreachable.UnreachableCodeException;
       throws Failure,
         JCacheException
   {
-    final Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
+    final Pair<PCacheType<String, Integer, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(32L);
 
     pair.getRight().setFailure(false);
@@ -520,7 +523,8 @@ import com.io7m.junreachable.UnreachableCodeException;
     void
     testPeriodAlreadyStarted()
   {
-    PCacheType<Integer, Integer, Failure> pc = TestUtilities.actuallyNull();
+    PCacheType<Integer, Integer, Integer, Failure> pc =
+      TestUtilities.actuallyNull();
 
     try {
       pc = this.newCache();
@@ -537,7 +541,8 @@ import com.io7m.junreachable.UnreachableCodeException;
     void
     testPeriodNotStarted()
   {
-    PCacheType<Integer, Integer, Failure> pc = TestUtilities.actuallyNull();
+    PCacheType<Integer, Integer, Integer, Failure> pc =
+      TestUtilities.actuallyNull();
 
     pc = this.newCache();
     assert pc != TestUtilities.actuallyNull();
@@ -546,7 +551,7 @@ import com.io7m.junreachable.UnreachableCodeException;
 
   /**
    * Repeatedly requesting a key keeps the key cached.
-   * 
+   *
    * @throws JCacheException
    */
 
@@ -554,7 +559,7 @@ import com.io7m.junreachable.UnreachableCodeException;
     throws Failure,
       JCacheException
   {
-    final Pair<PCacheType<String, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
+    final Pair<PCacheType<String, Integer, Integer, Failure>, LUCacheLoaderFaultInjectable<String, Integer>> pair =
       this.newCacheWithMaximumAge(2);
 
     final EventLog<String, Integer> ev = new EventLog<String, Integer>();

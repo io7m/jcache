@@ -1,10 +1,10 @@
 /*
  * Copyright © 2014 <code@io7m.com> http://io7m.com
- * 
+ *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
  * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
@@ -32,36 +32,36 @@ import com.io7m.jnull.NullCheck;
  * override all of the methods themselves). For example:
  * </p>
  * <p>
- * 
+ *
  * <pre>
  * interface ShortNameType extends
- *   PCacheType&lt;Integer, Boolean, IllegalArgumentException&gt;
+ *   PCacheType&lt;Integer, Boolean, Boolean, IllegalArgumentException&gt;
  * {
- * 
+ *
  * }
- * 
+ *
  * final class ShortNameCache extends
- *   PCacheAbstract&lt;Integer, Boolean, IllegalArgumentException&gt; implements
+ *   PCacheAbstract&lt;Integer, Boolean, Boolean, IllegalArgumentException&gt; implements
  *   ShortNameType
  * {
  *   public static ShortNameType wrap(
- *     PCacheType&lt;Integer, Boolean, IllegalArgumentException&gt; c)
+ *     PCacheType&lt;Integer, Boolean, Boolean, IllegalArgumentException&gt; c)
  *   {
  *     return new ShortNameCache(c);
  *   }
- * 
+ *
  *   private ShortNameCache(
- *     PCacheType&lt;Integer, Boolean, IllegalArgumentException&gt; c)
+ *     PCacheType&lt;Integer, Boolean, Boolean, IllegalArgumentException&gt; c)
  *   {
  *     super(c);
  *   }
  * }
  * </pre>
- * 
+ *
  * </p>
  * <p>
  * Now,
- * <code>ShortNameCache <: PCacheType<Integer, Boolean, IllegalArgumentException></code>
+ * <code>ShortNameCache <: PCacheType<Integer, Boolean, Boolean, IllegalArgumentException></code>
  * and <code>ShortNameCache <: ShortNameType</code>, but the writer of
  * <code>ShortNameCache</code> did not have to fill in all of the methods.
  * </p>
@@ -70,22 +70,24 @@ import com.io7m.jnull.NullCheck;
  * finalizer in order to prevent hostile subclasses from attacking the
  * implementation.
  * </p>
- * 
+ *
  * @param <K>
  *          The type of keys
- * @param <V>
- *          The type of values
+ * @param <TVIEW>
+ *          The type of cached values, as visible to users of the cache
+ * @param <TCACHE>
+ *          The type of cached values, as visible to cache implementations
  * @param <E>
  *          The type of exceptions
  */
 
-public abstract class PCacheAbstract<K, V, E extends Throwable> implements
-  PCacheType<K, V, E>
+public abstract class PCacheAbstract<K, TVIEW, TCACHE extends TVIEW, E extends Throwable> implements
+  PCacheType<K, TVIEW, TCACHE, E>
 {
-  private final PCacheType<K, V, E> cache;
+  private final PCacheType<K, TVIEW, TCACHE, E> cache;
 
   protected PCacheAbstract(
-    final PCacheType<K, V, E> in_cache)
+    final PCacheType<K, TVIEW, TCACHE, E> in_cache)
   {
     this.cache = NullCheck.notNull(in_cache, "Cache");
   }
@@ -96,7 +98,7 @@ public abstract class PCacheAbstract<K, V, E extends Throwable> implements
   }
 
   @Override public final void cacheEventsSubscribe(
-    final JCacheEventsType<K, V> events)
+    final JCacheEventsType<K, TCACHE> events)
   {
     this.cache.cacheEventsSubscribe(events);
   }
@@ -106,7 +108,7 @@ public abstract class PCacheAbstract<K, V, E extends Throwable> implements
     this.cache.cacheEventsUnsubscribe();
   }
 
-  @Override public final V cacheGetPeriodic(
+  @Override public final TVIEW cacheGetPeriodic(
     final K key)
     throws E,
       JCacheException

@@ -32,36 +32,36 @@ import com.io7m.jnull.NullCheck;
  * override all of the methods themselves). For example:
  * </p>
  * <p>
- * 
+ *
  * <pre>
  * interface ShortNameType extends
- *   LRUCacheType&lt;Integer, Boolean, IllegalArgumentException&gt;
+ *   LRUCacheType&lt;Integer, Boolean, Boolean, IllegalArgumentException&gt;
  * {
  * 
  * }
  * 
  * final class ShortNameCache extends
- *   LRUCacheAbstract&lt;Integer, Boolean, IllegalArgumentException&gt; implements
+ *   LRUCacheAbstract&lt;Integer, Boolean, Boolean, IllegalArgumentException&gt; implements
  *   ShortNameType
  * {
  *   public static ShortNameType wrap(
- *     LRUCacheType&lt;Integer, Boolean, IllegalArgumentException&gt; c)
+ *     LRUCacheType&lt;Integer, Boolean, Boolean, IllegalArgumentException&gt; c)
  *   {
  *     return new ShortNameCache(c);
  *   }
  * 
  *   private ShortNameCache(
- *     LRUCacheType&lt;Integer, Boolean, IllegalArgumentException&gt; c)
+ *     LRUCacheType&lt;Integer, Boolean, Boolean, IllegalArgumentException&gt; c)
  *   {
  *     super(c);
  *   }
  * }
  * </pre>
- * 
+ *
  * </p>
  * <p>
  * Now,
- * <code>ShortNameCache <: LRUCacheType<Integer, Boolean, IllegalArgumentException></code>
+ * <code>ShortNameCache <: LRUCacheType<Integer, Boolean, Boolean, IllegalArgumentException></code>
  * and <code>ShortNameCache <: ShortNameType</code>, but the writer of
  * <code>ShortNameCache</code> did not have to fill in all of the methods.
  * </p>
@@ -70,22 +70,24 @@ import com.io7m.jnull.NullCheck;
  * finalizer in order to prevent hostile subclasses from attacking the
  * implementation.
  * </p>
- * 
+ *
  * @param <K>
  *          The type of keys
- * @param <V>
- *          The type of values
+ * @param <TVIEW>
+ *          The type of cached values, as visible to users of the cache
+ * @param <TCACHE>
+ *          The type of cached values, as visible to cache implementations
  * @param <E>
  *          The type of exceptions
  */
 
-public abstract class LRUCacheAbstract<K, V, E extends Throwable> implements
-  LRUCacheType<K, V, E>
+public abstract class LRUCacheAbstract<K, TVIEW, TCACHE extends TVIEW, E extends Throwable> implements
+  LRUCacheType<K, TVIEW, TCACHE, E>
 {
-  private final LRUCacheType<K, V, E> cache;
+  private final LRUCacheType<K, TVIEW, TCACHE, E> cache;
 
   protected LRUCacheAbstract(
-    final LRUCacheType<K, V, E> in_cache)
+    final LRUCacheType<K, TVIEW, TCACHE, E> in_cache)
   {
     this.cache = NullCheck.notNull(in_cache, "Cache");
   }
@@ -96,7 +98,7 @@ public abstract class LRUCacheAbstract<K, V, E extends Throwable> implements
   }
 
   @Override public final void cacheEventsSubscribe(
-    final JCacheEventsType<K, V> events)
+    final JCacheEventsType<K, TCACHE> events)
   {
     this.cache.cacheEventsSubscribe(events);
   }
@@ -106,7 +108,7 @@ public abstract class LRUCacheAbstract<K, V, E extends Throwable> implements
     this.cache.cacheEventsUnsubscribe();
   }
 
-  @Override public final V cacheGetLU(
+  @Override public final TVIEW cacheGetLU(
     final K key)
     throws E,
       JCacheException

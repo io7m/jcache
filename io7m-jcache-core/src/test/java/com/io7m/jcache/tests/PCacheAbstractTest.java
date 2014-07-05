@@ -33,10 +33,10 @@ import com.io7m.jnull.NonNull;
 public class PCacheAbstractTest
 {
   private final class Completeness extends
-    PCacheAbstract<Integer, Integer, IllegalArgumentException>
+    PCacheAbstract<Integer, Integer, Integer, IllegalArgumentException>
   {
     protected Completeness(
-      final PCacheType<Integer, Integer, IllegalArgumentException> in_cache)
+      final PCacheType<Integer, Integer, Integer, IllegalArgumentException> in_cache)
     {
       super(in_cache);
     }
@@ -49,7 +49,7 @@ public class PCacheAbstractTest
     final BitSet calls = new BitSet();
     final Completeness c =
       new Completeness(
-        new PCacheType<Integer, Integer, IllegalArgumentException>() {
+        new PCacheType<Integer, Integer, Integer, IllegalArgumentException>() {
 
           @Override public void cacheDelete()
           {
