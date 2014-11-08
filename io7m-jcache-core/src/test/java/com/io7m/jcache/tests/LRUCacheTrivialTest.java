@@ -331,6 +331,48 @@ import com.io7m.jnull.NullCheckException;
   }
 
   /**
+   * Caching items evicts the oldest items first.
+   *
+   * @throws JCacheException
+   */
+
+  @SuppressWarnings("boxing") @Test public void testEvictionResized()
+    throws Failure,
+      JCacheException
+  {
+    final Pair<LUCacheLoaderFaultInjectable<String, Long>, LRUCacheTrivial<String, Long, Long, Failure>> pair =
+      this.newCache(100L);
+
+    final LUCacheLoaderFaultInjectable<String, Long> faults = pair.getLeft();
+    faults.setFailure(false);
+    faults.setLoadedValue(0L);
+    faults.setLoadedValueSize(BigInteger.valueOf(1));
+
+    final LRUCacheTrivial<String, Long, Long, Failure> cache =
+      pair.getRight();
+    for (long i = 0; i < 100; ++i) {
+      faults.setFailure(false);
+      faults.setLoadedValue(i);
+      faults.setLoadedValueSize(BigInteger.valueOf(1));
+      cache.cacheGetLU("key" + i);
+      Assert.assertEquals(i + 1, cache.cacheSize().intValue());
+    }
+
+    Assert.assertEquals(100, cache.cacheSize().intValue());
+
+    final LRUCacheConfig config =
+      LRUCacheConfig.empty().withMaximumCapacity(BigInteger.valueOf(10));
+    cache.lruCacheSetConfiguration(config);
+
+    faults.setFailure(false);
+    faults.setLoadedValue(101L);
+    faults.setLoadedValueSize(BigInteger.valueOf(1));
+    cache.cacheGetLU("key" + 101);
+
+    Assert.assertEquals(10, cache.cacheSize().intValue());
+  }
+
+  /**
    * A cache of size 1 can hold one object of size 1.
    *
    * @throws JCacheException
@@ -477,6 +519,24 @@ import com.io7m.jnull.NullCheckException;
     pair.getLeft().setLoadedValue((Long) TestUtilities.actuallyNull());
     pair.getLeft().setLoadedValueSize(BigInteger.valueOf(4));
     pair.getRight().cacheGetLU(Long.valueOf(23));
+  }
+
+  /**
+   * Passing a null configuration is an error.
+   *
+   * @throws JCacheException
+   */
+
+  @Test(expected = NullCheckException.class) public
+    void
+    testNullConfiguration()
+      throws JCacheException
+  {
+    final Pair<LUCacheLoaderFaultInjectable<Long, Long>, LRUCacheTrivial<Long, Long, Long, Failure>> pair =
+      this.newCache(32L);
+
+    pair.getRight().lruCacheSetConfiguration(
+      (LRUCacheConfig) TestUtilities.actuallyNull());
   }
 
   /**

@@ -1,10 +1,10 @@
 /*
  * Copyright © 2014 <code@io7m.com> http://io7m.com
- * 
+ *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
  * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
@@ -22,7 +22,7 @@ import java.math.BigInteger;
  * The main exception type raised by cache operations.
  */
 
-public abstract class JCacheException extends Throwable
+public abstract class JCacheException extends RuntimeException
 {
   /**
    * The loader for the cache returned <code>null</code> for a given key.
@@ -126,7 +126,7 @@ public abstract class JCacheException extends Throwable
 
   /**
    * Construct an exception indicating that a loader returned <tt>null</tt>.
-   * 
+   *
    * @param key
    *          The key
    * @return An exception
@@ -147,7 +147,7 @@ public abstract class JCacheException extends Throwable
   /**
    * Construct an exception indicating that an object is too large for the
    * cache.
-   * 
+   *
    * @param key
    *          The key
    * @param size
@@ -179,12 +179,12 @@ public abstract class JCacheException extends Throwable
   /**
    * Construct an exception indicating that an object returned a negative
    * size.
-   * 
+   *
    * @param key
    *          The key
    * @param size
    *          The size of the object
-   * 
+   *
    * @return An exception
    * @throws ConstraintError
    *           Iff an internal constraint error occurs.

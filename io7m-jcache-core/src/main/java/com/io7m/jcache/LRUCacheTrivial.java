@@ -1,10 +1,10 @@
 /*
  * Copyright © 2014 <code@io7m.com> http://io7m.com
- * 
+ *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
  * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
@@ -104,7 +104,7 @@ public final class LRUCacheTrivial<K, TVIEW, TCACHE extends TVIEW, E extends Thr
     return new LRUCacheTrivial<K, TVIEW, TCACHE, E>(loader, config);
   }
 
-  private final LRUCacheConfig                  config;
+  private LRUCacheConfig                        config;
   private @Nullable JCacheEventsType<K, TCACHE> events;
   private BigInteger                            gets;
   private final Map<K, CachedValue<TCACHE>>     items;
@@ -389,6 +389,12 @@ public final class LRUCacheTrivial<K, TVIEW, TCACHE extends TVIEW, E extends Thr
   @Override public LRUCacheConfig lruCacheConfiguration()
   {
     return this.config;
+  }
+
+  @Override public void lruCacheSetConfiguration(
+    final LRUCacheConfig c)
+  {
+    this.config = NullCheck.notNull(c, "Configuration");
   }
 
   @Override public String toString()
