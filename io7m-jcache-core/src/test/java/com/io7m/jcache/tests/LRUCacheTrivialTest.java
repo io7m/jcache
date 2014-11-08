@@ -1,10 +1,10 @@
 /*
  * Copyright © 2014 <code@io7m.com> http://io7m.com
- *
+ * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
  * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
@@ -331,12 +331,12 @@ import com.io7m.jnull.NullCheckException;
   }
 
   /**
-   * Caching items evicts the oldest items first.
+   * Caching items evicts the oldest items first after resizing.
    *
    * @throws JCacheException
    */
 
-  @SuppressWarnings("boxing") @Test public void testEvictionResized()
+  @SuppressWarnings("boxing") @Test public void testEvictionResized_0()
     throws Failure,
       JCacheException
   {
@@ -362,7 +362,7 @@ import com.io7m.jnull.NullCheckException;
 
     final LRUCacheConfig config =
       LRUCacheConfig.empty().withMaximumCapacity(BigInteger.valueOf(10));
-    cache.lruCacheSetConfiguration(config);
+    cache.cacheSetConfiguration(config);
 
     faults.setFailure(false);
     faults.setLoadedValue(101L);
@@ -370,6 +370,48 @@ import com.io7m.jnull.NullCheckException;
     cache.cacheGetLU("key" + 101);
 
     Assert.assertEquals(10, cache.cacheSize().intValue());
+  }
+
+  /**
+   * Check that eviction is correct when the cache configuration is changed
+   * and an object exists in the cache with a size greater than the new
+   * maximum.
+   *
+   * @throws JCacheException
+   */
+
+  @SuppressWarnings("boxing") @Test public void testEvictionResized_1()
+    throws Failure,
+      JCacheException
+  {
+    final LRUCacheConfig config =
+      LRUCacheConfig.empty().withMaximumCapacity(BigInteger.valueOf(10L));
+
+    final LUCacheLoaderFaultInjectable<Long, String> loader =
+      new LUCacheLoaderFaultInjectable<Long, String>();
+    final LRUCacheTrivial<Long, String, String, Failure> cache =
+      LRUCacheTrivial.newCache(loader, config);
+
+    loader.setLoadedValueSize(BigInteger.valueOf("hellohello".length()));
+    loader.setLoadedValue("hellohello");
+
+    cache.cacheGetLU(Long.valueOf(0));
+
+    Assert.assertEquals(10, cache.cacheSize().intValue());
+    Assert.assertTrue(cache.cacheIsCached(Long.valueOf(0)));
+
+    final LRUCacheConfig config_after =
+      LRUCacheConfig.empty().withMaximumCapacity(BigInteger.valueOf(5L));
+
+    cache.cacheSetConfiguration(config_after);
+
+    loader.setLoadedValueSize(BigInteger.valueOf("hello".length()));
+    loader.setLoadedValue("hello");
+    cache.cacheGetLU(Long.valueOf(1));
+
+    Assert.assertEquals(5, cache.cacheSize().intValue());
+    Assert.assertTrue(cache.cacheIsCached(Long.valueOf(1)));
+    Assert.assertFalse(cache.cacheIsCached(Long.valueOf(0)));
   }
 
   /**
@@ -535,7 +577,7 @@ import com.io7m.jnull.NullCheckException;
     final Pair<LUCacheLoaderFaultInjectable<Long, Long>, LRUCacheTrivial<Long, Long, Long, Failure>> pair =
       this.newCache(32L);
 
-    pair.getRight().lruCacheSetConfiguration(
+    pair.getRight().cacheSetConfiguration(
       (LRUCacheConfig) TestUtilities.actuallyNull());
   }
 
@@ -552,7 +594,7 @@ import com.io7m.jnull.NullCheckException;
         config);
     Assert.assertEquals(BigInteger.ZERO, cache.cacheItemCount());
     Assert.assertEquals(BigInteger.ZERO, cache.cacheSize());
-    Assert.assertEquals(config, cache.lruCacheConfiguration());
+    Assert.assertEquals(config, cache.cacheGetConfiguration());
 
     for (long e = 2; e <= 32; e *= 2) {
       Assert.assertFalse(cache.cacheIsCached(Long.valueOf((long) Math.pow(

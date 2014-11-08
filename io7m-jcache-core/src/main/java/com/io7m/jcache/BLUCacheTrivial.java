@@ -1,10 +1,10 @@
 /*
  * Copyright © 2014 <code@io7m.com> http://io7m.com
- * 
+ *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
  * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
@@ -258,7 +258,7 @@ public final class BLUCacheTrivial<K, TVIEW, TCACHE extends TVIEW, E extends Thr
     return new BLUCacheTrivial<K, TVIEW, TCACHE, E>(loader, config);
   }
 
-  private final BLUCacheConfig                           config;
+  private BLUCacheConfig                                 config;
   private @Nullable JCacheEventsType<K, TCACHE>          events;
   private BigInteger                                     gets;
   private final Map<ExtendedKey<K>, CachedValue<TCACHE>> items;
@@ -429,6 +429,11 @@ public final class BLUCacheTrivial<K, TVIEW, TCACHE extends TVIEW, E extends Thr
     }
 
     return this.cacheGetNew(key);
+  }
+
+  @Override public BLUCacheConfig cacheGetConfiguration()
+  {
+    return this.config;
   }
 
   private Receipt cacheGetNew(
@@ -625,6 +630,12 @@ public final class BLUCacheTrivial<K, TVIEW, TCACHE extends TVIEW, E extends Thr
     } finally {
       r.invalidate();
     }
+  }
+
+  @Override public void cacheSetConfiguration(
+    final BLUCacheConfig c)
+  {
+    this.config = NullCheck.notNull(c, "Configuration");
   }
 
   @Override public BigInteger cacheSize()

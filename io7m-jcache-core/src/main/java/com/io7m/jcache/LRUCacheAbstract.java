@@ -138,14 +138,14 @@ public abstract class LRUCacheAbstract<K, TVIEW, TCACHE extends TVIEW, E extends
     // Nothing
   }
 
-  @Override public final LRUCacheConfig lruCacheConfiguration()
+  @Override public final LRUCacheConfig cacheGetConfiguration()
   {
-    return this.cache.lruCacheConfiguration();
+    return this.cache.cacheGetConfiguration();
   }
 
-  @Override public final void lruCacheSetConfiguration(
+  @Override public final void cacheSetConfiguration(
     final LRUCacheConfig c)
   {
-    this.cache.lruCacheSetConfiguration(c);
+    this.cache.cacheSetConfiguration(c);
   }
 }

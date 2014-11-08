@@ -116,6 +116,11 @@ public abstract class BLUCacheAbstract<K, TVIEW, TCACHE extends TVIEW, E extends
     this.cache.cacheEventsUnsubscribe();
   }
 
+  @Override public final BLUCacheConfig cacheGetConfiguration()
+  {
+    return this.cache.cacheGetConfiguration();
+  }
+
   @Override public final boolean cacheIsAvailable(
     final K key)
   {
@@ -137,6 +142,12 @@ public abstract class BLUCacheAbstract<K, TVIEW, TCACHE extends TVIEW, E extends
   @Override public final BigInteger cacheItemCount()
   {
     return this.cache.cacheItemCount();
+  }
+
+  @Override public final void cacheSetConfiguration(
+    final BLUCacheConfig config)
+  {
+    this.cache.cacheSetConfiguration(config);
   }
 
   @Override public final BigInteger cacheSize()

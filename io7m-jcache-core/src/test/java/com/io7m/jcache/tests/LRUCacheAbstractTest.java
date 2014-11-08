@@ -102,14 +102,14 @@ public final class LRUCacheAbstractTest
             return BigInteger.ONE;
           }
 
-          @Override public @NonNull LRUCacheConfig lruCacheConfiguration()
+          @Override public @NonNull LRUCacheConfig cacheGetConfiguration()
           {
             Assert.assertFalse(calls.get(7));
             calls.set(7);
             return TestUtilities.actuallyNull();
           }
 
-          @Override public void lruCacheSetConfiguration(
+          @Override public void cacheSetConfiguration(
             final LRUCacheConfig _)
           {
             Assert.assertFalse(calls.get(8));
@@ -125,8 +125,8 @@ public final class LRUCacheAbstractTest
     c.cacheIsCached((Integer) TestUtilities.actuallyNull());
     c.cacheItemCount();
     c.cacheSize();
-    c.lruCacheConfiguration();
-    c.lruCacheSetConfiguration(LRUCacheConfig.empty());
+    c.cacheGetConfiguration();
+    c.cacheSetConfiguration(LRUCacheConfig.empty());
 
     for (int index = 0; index <= 8; ++index) {
       Assert.assertTrue(calls.get(index));

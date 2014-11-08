@@ -386,12 +386,12 @@ public final class LRUCacheTrivial<K, TVIEW, TCACHE extends TVIEW, E extends Thr
     }
   }
 
-  @Override public LRUCacheConfig lruCacheConfiguration()
+  @Override public LRUCacheConfig cacheGetConfiguration()
   {
     return this.config;
   }
 
-  @Override public void lruCacheSetConfiguration(
+  @Override public void cacheSetConfiguration(
     final LRUCacheConfig c)
   {
     this.config = NullCheck.notNull(c, "Configuration");

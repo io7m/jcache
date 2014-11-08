@@ -1,10 +1,10 @@
 /*
  * Copyright © 2014 <code@io7m.com> http://io7m.com
- *
+ * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
  * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.io7m.jcache.BLUCacheAbstract;
+import com.io7m.jcache.BLUCacheConfig;
 import com.io7m.jcache.BLUCacheReceiptType;
 import com.io7m.jcache.BLUCacheType;
 import com.io7m.jcache.JCacheEventsType;
@@ -117,6 +118,20 @@ public class BLUCacheAbstractTest
             calls.set(0);
             return BigInteger.ONE;
           }
+
+          @Override public BLUCacheConfig cacheGetConfiguration()
+          {
+            Assert.assertFalse(calls.get(9));
+            calls.set(9);
+            return TestUtilities.actuallyNull();
+          }
+
+          @Override public void cacheSetConfiguration(
+            final BLUCacheConfig config)
+          {
+            Assert.assertFalse(calls.get(10));
+            calls.set(10);
+          }
         });
 
     c.cacheSize();
@@ -129,8 +144,10 @@ public class BLUCacheAbstractTest
     c.cacheEventsUnsubscribe();
     c.bluCacheGet((Integer) TestUtilities.actuallyNull());
     c.cacheDelete();
+    c.cacheGetConfiguration();
+    c.cacheSetConfiguration(BLUCacheConfig.empty());
 
-    for (int index = 0; index <= 8; ++index) {
+    for (int index = 0; index <= 10; ++index) {
       Assert.assertTrue(calls.get(index));
     }
   }

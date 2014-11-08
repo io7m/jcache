@@ -36,7 +36,7 @@ public interface LRUCacheType<K, TVIEW, TCACHE extends TVIEW, E extends Throwabl
    * @return The configuration for the cache.
    */
 
-  LRUCacheConfig lruCacheConfiguration();
+  LRUCacheConfig cacheGetConfiguration();
 
   /**
    * Set the cache configuration.
@@ -45,6 +45,6 @@ public interface LRUCacheType<K, TVIEW, TCACHE extends TVIEW, E extends Throwabl
    *          The new configuration.
    */
 
-  void lruCacheSetConfiguration(
+  void cacheSetConfiguration(
     final LRUCacheConfig c);
 }
