@@ -39,7 +39,7 @@ public final class BLUCacheConfig
 
   /**
    * Construct a new cache configuration based on <tt>other</tt>.
-   * 
+   *
    * @param other
    *          An existing configuration
    * @return A new configuration derived from <tt>other</tt>
@@ -71,7 +71,7 @@ public final class BLUCacheConfig
       RangeCheck.checkGreaterEqualBig(
         NullCheck.notNull(in_max_borrows, "Maximum borrows"),
         "Maximum borrows",
-        NullCheck.notNull(BigInteger.ONE),
+        NullCheck.notNull(BigInteger.ZERO),
         "Smallest maximum");
   }
 
@@ -147,7 +147,10 @@ public final class BLUCacheConfig
    * borrowed items per key is usually indicative of code that is failing to
    * return items.
    * </p>
-   * 
+   * <p>
+   * A value of zero means "no limit".
+   * </p>
+   *
    * @param max
    *          The maximum number of borrowed items per key
    * @return A new cache configuration
@@ -162,7 +165,7 @@ public final class BLUCacheConfig
   /**
    * Derive a configuration based on the existing configuration with a maximum
    * capacity of <code>max</code>.
-   * 
+   *
    * @param max
    *          The maximum cache capacity
    * @return A new cache configuration

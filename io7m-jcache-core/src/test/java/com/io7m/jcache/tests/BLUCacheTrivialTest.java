@@ -184,6 +184,53 @@ public class BLUCacheTrivialTest
     Assert.assertTrue(cache.cacheIsCached("key0"));
   }
 
+  @Test public void testBorrowNoLimit()
+    throws Failure,
+      JCacheException
+  {
+    final Pair<LUCacheLoaderFaultInjectable<String, BigInteger>, BLUCacheTrivial<String, BigInteger, BigInteger, Failure>> pair =
+      this.newCache(8, 0);
+    final BLUCacheTrivial<String, BigInteger, BigInteger, Failure> cache =
+      pair.getRight();
+
+    final LUCacheLoaderFaultInjectable<String, BigInteger> loader =
+      pair.getLeft();
+    loader.setLoadedValue(BigInteger.valueOf(23L));
+    loader.setLoadedValueSize(BigInteger.ONE);
+
+    final EventLog<String, BigInteger> elog =
+      new EventLog<String, BigInteger>();
+    cache.cacheEventsSubscribe(elog);
+
+    final ArrayList<BLUCacheReceiptType<String, BigInteger>> borrows =
+      new ArrayList<BLUCacheReceiptType<String, BigInteger>>();
+
+    for (int index = 0; index < 1000; ++index) {
+      final BLUCacheReceiptType<String, BigInteger> r =
+        cache.bluCacheGet("key0");
+      Assert.assertTrue(elog.loaded);
+      Assert.assertEquals("key0", elog.loaded_key);
+      Assert.assertEquals(BigInteger.valueOf(23L), elog.loaded_value);
+      Assert.assertEquals(BigInteger.ONE, elog.loaded_size);
+
+      Assert.assertEquals(BigInteger.valueOf(index + 1), cache.cacheSize());
+      Assert.assertEquals(
+        BigInteger.valueOf(index + 1),
+        cache.cacheItemCount());
+      Assert.assertTrue(cache.cacheIsBorrowed("key0"));
+      Assert.assertFalse(cache.cacheIsAvailable("key0"));
+      Assert.assertTrue(cache.cacheIsCached("key0"));
+
+      borrows.add(r);
+    }
+
+    for (int index = 0; index < 1000; ++index) {
+      borrows.get(index).returnToCache();
+    }
+
+    Assert.assertEquals(BigInteger.valueOf(8), cache.cacheSize());
+  }
+
   @Test public void testDelete_0()
     throws Failure,
       JCacheException

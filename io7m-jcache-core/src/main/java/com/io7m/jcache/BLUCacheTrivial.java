@@ -1,10 +1,10 @@
 /*
  * Copyright © 2014 <code@io7m.com> http://io7m.com
- *
+ * 
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
  * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
@@ -301,15 +301,17 @@ public final class BLUCacheTrivial<K, TVIEW, TCACHE extends TVIEW, E extends Thr
     final K key)
     throws JCacheException
   {
-    if (this.items_borrowed.containsKey(key)) {
-      final NavigableSet<BigInteger> serials = this.items_borrowed.get(key);
-      assert serials.size() < Integer.MAX_VALUE;
+    final BigInteger maximum = this.config.getMaximumBorrowsPerKey();
+    if (maximum.compareTo(BigInteger.ZERO) > 0) {
+      if (this.items_borrowed.containsKey(key)) {
+        final NavigableSet<BigInteger> serials = this.items_borrowed.get(key);
+        assert serials.size() < Integer.MAX_VALUE;
 
-      final BigInteger next_size =
-        BigInteger.valueOf(serials.size()).add(BigInteger.ONE);
-      final BigInteger maximum = this.config.getMaximumBorrowsPerKey();
-      if (next_size.compareTo(maximum) > 0) {
-        throw JCacheException.tooManyBorrows(key);
+        final BigInteger next_size =
+          BigInteger.valueOf(serials.size()).add(BigInteger.ONE);
+        if (next_size.compareTo(maximum) > 0) {
+          throw JCacheException.tooManyBorrows(key);
+        }
       }
     }
   }
